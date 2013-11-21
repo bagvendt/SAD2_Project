@@ -1,0 +1,1 @@
+This folder contains all the projections from the IMDB sql to relevant .txt files
