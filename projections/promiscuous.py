@@ -3,7 +3,7 @@ import pickle
 
 sys.setrecursionlimit(50000)
 
-USE_CACHE = False
+USE_CACHE = True
 
 if not USE_CACHE:
 	import MySQLdb as mdb
