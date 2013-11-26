@@ -18,7 +18,7 @@ import java.util.StringTokenizer;
 
 /**
  */
-public class Promiscuous {
+public class Popular {
 
     public static class Map extends Mapper<LongWritable, Text, Text, IntWritable> {
         private final static IntWritable one = new IntWritable(1);
@@ -50,7 +50,7 @@ public class Promiscuous {
         Configuration conf = new Configuration();
 
         Job job = new Job(conf, "wordcount");
-        job.setJarByClass(Promiscuous.class);
+        job.setJarByClass(dk.itu.sad2.Popular.class);
 
         job.setOutputKeyClass(Text.class);
         job.setOutputValueClass(IntWritable.class);

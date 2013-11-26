@@ -4,7 +4,7 @@
     <artifact type="jar" name="promiscuius">
       <output-path>$PROJECT_DIR$/out/</output-path>
       <root id="archive" name="promiscuius.jar">
-        <element id="module-output" name="promiscuous" />
+        <element id="module-output" name="popular" />
       </root>
     </artifact>
   </component>
@@ -160,10 +160,10 @@
   </component>
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/promiscuous.iml" filepath="$PROJECT_DIR$/promiscuous.iml" />
+      <module fileurl="file://$PROJECT_DIR$/popular.iml" filepath="$PROJECT_DIR$/popular.iml" />
     </modules>
   </component>
-  <component name="ProjectRootManager" version="2" languageLevel="JDK_1_6" assert-keyword="true" jdk-15="true" project-jdk-name="1.7" project-jdk-type="JavaSDK">
+  <component name="ProjectRootManager" version="2" languageLevel="JDK_1_6" assert-keyword="true" jdk-15="true" project-jdk-name="1.6" project-jdk-type="JavaSDK">
     <output url="file://$PROJECT_DIR$/out" />
   </component>
   <component name="VcsDirectoryMappings">
