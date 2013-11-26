@@ -10,3 +10,12 @@
 .DS_Store
 
 *.iws
+
+
+#Tex
+*.log
+*.out
+*.aux
+*.fdb_latexmk
+*.pdf
+*.synctex.gz
