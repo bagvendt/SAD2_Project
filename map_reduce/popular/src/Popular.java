@@ -16,6 +16,8 @@ import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
 import org.apache.hadoop.mapreduce.lib.output.TextOutputFormat;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.StringTokenizer;
 
 /**
@@ -23,6 +25,8 @@ import java.util.StringTokenizer;
 public class Popular {
 
     public static class RoundOneMap extends Mapper<LongWritable, Text, Text, Text> {
+        // Input <Actor, List<Movies>>
+        // Returns emits <Movie, Actor>
         private Text actor = new Text();
         private Text movie = new Text();
 
@@ -38,7 +42,8 @@ public class Popular {
     }
 
     public static class RoundOneReduce extends Reducer<Text, Text, Text, Text> {
-
+        // Input List<Movie, Actor>
+        // Emits <Movie, List<Actor>
         public void reduce(Text movie, Iterable<Text> actors, Context context)
                 throws IOException, InterruptedException {
             StringBuilder result = new StringBuilder();
@@ -50,32 +55,41 @@ public class Popular {
     }
 
     public static class RoundTwoMap extends Mapper<LongWritable, Text, Text, Text> {
-        // Input <Movie, Actor>
-        // Returns emits <Actor,Actor>
-
-        private Text actor = new Text();
-        private Text movie = new Text();
+        // Input <Movie, List<Actor>
+        // Emits <Actor,Actor>
 
         public void map(LongWritable key, Text value, Context context) throws IOException, InterruptedException {
             String line = value.toString();
             StringTokenizer tokenizer = new StringTokenizer(line);
-            actor.set(tokenizer.nextToken());
+
+            ArrayList<String> actors = new ArrayList<String>();
+            tokenizer.nextToken();
             while (tokenizer.hasMoreTokens()) {
-                movie.set(tokenizer.nextToken());
-                context.write(movie, actor);
+                actors.add(tokenizer.nextToken());
+            }
+
+            for(int i = 0; i < actors.size(); i++){
+                for(int j = 0; j < actors.size(); j++){
+                    String first = actors.get(i);
+                    String second = actors.get(j);
+                    if (!first.equals(second))
+                        context.write(new Text(first), new Text(second));
+                }
             }
         }
     }
 
-    public static class RoundTwoReduce extends Reducer<Text, Text, Text, Text> {
+    public static class RoundTwoReduce extends Reducer<Text, Text, Text, IntWritable> {
+        // Input <Actor, Actor>
+        // Emits <Actor, count>
 
-        public void reduce(Text movie, Iterable<Text> actors, Context context)
+        public void reduce(Text actor, Iterable<Text> coactors, Context context)
                 throws IOException, InterruptedException {
-            StringBuilder result = new StringBuilder();
-            for(Text actor : actors) {
-                result.append(actor.toString() + " ");
+            HashSet<Text> actorList = new HashSet<Text>();
+            for (Text coactor : coactors){
+                actorList.add(coactor);
             }
-            context.write(movie, new Text(result.toString()));
+            context.write(actor, new IntWritable(actorList.size()));
         }
     }
 
