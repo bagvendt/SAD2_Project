@@ -5,6 +5,7 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
+import org.apache.hadoop.mapred.jobcontrol.JobControl;
 import org.apache.hadoop.mapreduce.Job;
 //import org.apache.hadoop.mapred.jobcontrol.*;
 import org.apache.hadoop.mapreduce.Mapper;
@@ -66,7 +67,11 @@ public class Popular {
         FileInputFormat.addInputPath(job, new Path(args[0]));
         FileOutputFormat.setOutputPath(job, new Path(args[1]));
 
+
         job.waitForCompletion(true);
+        if (job.isSuccessful()) {
+
+        }
     }
 
 }
