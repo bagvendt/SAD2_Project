@@ -1,4 +1,9 @@
-import MySQLdb as mdb
+import pickle
+
+USE_CACHE = True
+
+if not USE_CACHE:
+	import MySQLdb as mdb
 
 SQL_GET_ACTOR_NAMES = """SELECT id,first_name, last_name FROM actors"""
 
@@ -38,8 +43,15 @@ def expand_with_actor_names(sorted_list, names):
 		new_list.append(new_val)
 	return new_list
 
+if not USE_CACHE:
+	actor_names = get_actor_names_from_db()
+	with open('cached.pickle', 'wb') as handle:
+		pickle.dump(actor_names, handle)
+else:
+	with open('cached.pickle', 'rb') as handle:
+		actor_names = pickle.load(handle)
 
-actor_names = get_actor_names_from_db()
+
 data = read_output("../data/Actor-Number.out")
 data = sorted(data,key=lambda x: x[1])[::-1]
 print expand_with_actor_names(data, actor_names)
