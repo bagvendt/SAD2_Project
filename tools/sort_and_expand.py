@@ -32,14 +32,12 @@ def read_output(location):
 			data.append(val)
 	return data
 
-	
-
 def expand_with_actor_names(sorted_list, names):
 	new_list = []
 	for val in sorted_list:
 		actor_id, count = val
 		actor_name = names[actor_id]
-		new_val = (actor_name, count)
+		new_val = (actor_id, actor_name, count)
 		new_list.append(new_val)
 	return new_list
 
@@ -52,10 +50,13 @@ else:
 		actor_names = pickle.load(handle)
 
 
-data = read_output("../data/Actor-Number.out")
-data = sorted(data,key=lambda x: x[1])[::-1]
+#data = read_output("../data/Actor-Number.out")
+data = read_output("../data/sequential_output.out")
+#print len(data)
 
-result = expand_with_actor_names(data, actor_names)
+
+data = expand_with_actor_names(data, actor_names)
+result = sorted(data,key=lambda x: (x[2], -x[0]))
 
 for val in result:
 	print val
