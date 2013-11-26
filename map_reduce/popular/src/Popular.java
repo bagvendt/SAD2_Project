@@ -6,6 +6,7 @@ import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapreduce.Job;
+//import org.apache.hadoop.mapred.jobcontrol.*;
 import org.apache.hadoop.mapreduce.Mapper;
 import org.apache.hadoop.mapreduce.Reducer;
 import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
@@ -20,40 +21,41 @@ import java.util.StringTokenizer;
  */
 public class Popular {
 
-    public static class Map extends Mapper<LongWritable, Text, Text, IntWritable> {
-        private final static IntWritable one = new IntWritable(1);
-        private Text word = new Text();
+    public static class Map extends Mapper<LongWritable, Text, Text, Text> {
+        private Text actor = new Text();
+        private Text movie = new Text();
 
         public void map(LongWritable key, Text value, Context context) throws IOException, InterruptedException {
             String line = value.toString();
             StringTokenizer tokenizer = new StringTokenizer(line);
+            actor.set(tokenizer.nextToken());
             while (tokenizer.hasMoreTokens()) {
-                word.set(tokenizer.nextToken());
-                context.write(word, one);
+                movie.set(tokenizer.nextToken());
+                context.write(movie, actor);
             }
         }
     }
 
-    public static class Reduce extends Reducer<Text, IntWritable, Text, IntWritable> {
+    public static class Reduce extends Reducer<Text, Text, Text, Text> {
 
-        public void reduce(Text key, Iterable<IntWritable> values, Context context)
+        public void reduce(Text movie, Iterable<Text> actors, Context context)
                 throws IOException, InterruptedException {
-            int sum = 0;
-            for (IntWritable val : values) {
-                sum += val.get();
+            StringBuilder result = new StringBuilder();
+            for(Text actor : actors) {
+                result.append(actor.toString() + " ");
             }
-            context.write(key, new IntWritable(sum));
+            context.write(movie, new Text(result.toString()));
         }
     }
 
     public static void main(String[] args) throws Exception {
         Configuration conf = new Configuration();
 
-        Job job = new Job(conf, "wordcount");
+        Job job = new Job(conf, "popular");
         job.setJarByClass(dk.itu.sad2.Popular.class);
 
         job.setOutputKeyClass(Text.class);
-        job.setOutputValueClass(IntWritable.class);
+        job.setOutputValueClass(Text.class);
 
         job.setMapperClass(Map.class);
         job.setReducerClass(Reduce.class);
