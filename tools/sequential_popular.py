@@ -31,7 +31,8 @@ def build_output_list(actor_dict, movie_dict):
 	output_list = []
 	for actor_id in actor_dict:
 		count = count_co_actors_for_actor(actor_id, actor_dict, movie_dict)
-		output_list.append(str(actor_id) + "\t" + str(count))
+		if count > 0: #discard actors with zero count
+			output_list.append(str(actor_id) + "\t" + str(count))
 	return output_list
 
 def do_print(output_list):
