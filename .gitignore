@@ -8,3 +8,5 @@
 
 # Retarded .DS_Store
 .DS_Store
+
+*.iws

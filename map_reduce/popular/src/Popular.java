@@ -129,6 +129,7 @@ public class Popular {
 
             FileInputFormat.addInputPath(roundTwoJob, new Path(args[2]));
             FileOutputFormat.setOutputPath(roundTwoJob, new Path(args[3]));
+            roundTwoJob.waitForCompletion(true);
         }
     }
 
