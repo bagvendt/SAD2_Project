@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ArtifactManager">
-    <artifact type="jar" name="promiscuius">
+    <artifact type="jar" name="popular">
       <output-path>$PROJECT_DIR$/out/</output-path>
-      <root id="archive" name="promiscuius.jar">
+      <root id="archive" name="popular.jar">
         <element id="module-output" name="popular" />
       </root>
     </artifact>
