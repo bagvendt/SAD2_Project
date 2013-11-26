@@ -1,0 +1,11 @@
+Upload file:
+hadoop fs -put - <input file>
+    Example: hadoop fs -put - /gutenberg/in/1342.txt
+
+Run file:
+jar <local jar file> <Main class> <remote in dir> <remote out dir>
+    Example: jar popular.jar dk.itu.sad2.Popular /gutenberg/in/ /gutenberg/out/
+
+Remove file:
+hadoop dfs -rmr <Remote file>
+    Example: hadoop dfs -rmr /gutenberg/out/

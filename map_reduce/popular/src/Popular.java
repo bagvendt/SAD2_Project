@@ -22,7 +22,7 @@ import java.util.StringTokenizer;
  */
 public class Popular {
 
-    public static class Map extends Mapper<LongWritable, Text, Text, Text> {
+    public static class RoundOneMap extends Mapper<LongWritable, Text, Text, Text> {
         private Text actor = new Text();
         private Text movie = new Text();
 
@@ -37,7 +37,37 @@ public class Popular {
         }
     }
 
-    public static class Reduce extends Reducer<Text, Text, Text, Text> {
+    public static class RoundOneReduce extends Reducer<Text, Text, Text, Text> {
+
+        public void reduce(Text movie, Iterable<Text> actors, Context context)
+                throws IOException, InterruptedException {
+            StringBuilder result = new StringBuilder();
+            for(Text actor : actors) {
+                result.append(actor.toString() + " ");
+            }
+            context.write(movie, new Text(result.toString()));
+        }
+    }
+
+    public static class RoundTwoMap extends Mapper<LongWritable, Text, Text, Text> {
+        // Input <Movie, Actor>
+        // Returns emits <Actor,Actor>
+
+        private Text actor = new Text();
+        private Text movie = new Text();
+
+        public void map(LongWritable key, Text value, Context context) throws IOException, InterruptedException {
+            String line = value.toString();
+            StringTokenizer tokenizer = new StringTokenizer(line);
+            actor.set(tokenizer.nextToken());
+            while (tokenizer.hasMoreTokens()) {
+                movie.set(tokenizer.nextToken());
+                context.write(movie, actor);
+            }
+        }
+    }
+
+    public static class RoundTwoReduce extends Reducer<Text, Text, Text, Text> {
 
         public void reduce(Text movie, Iterable<Text> actors, Context context)
                 throws IOException, InterruptedException {
@@ -52,24 +82,24 @@ public class Popular {
     public static void main(String[] args) throws Exception {
         Configuration conf = new Configuration();
 
-        Job job = new Job(conf, "popular");
-        job.setJarByClass(dk.itu.sad2.Popular.class);
+        Job roundOneJob = new Job(conf, "popular");
+        roundOneJob.setJarByClass(dk.itu.sad2.Popular.class);
 
-        job.setOutputKeyClass(Text.class);
-        job.setOutputValueClass(Text.class);
+        roundOneJob.setOutputKeyClass(Text.class);
+        roundOneJob.setOutputValueClass(Text.class);
 
-        job.setMapperClass(Map.class);
-        job.setReducerClass(Reduce.class);
+        roundOneJob.setMapperClass(RoundOneMap.class);
+        roundOneJob.setReducerClass(RoundOneReduce.class);
 
-        job.setInputFormatClass(TextInputFormat.class);
-        job.setOutputFormatClass(TextOutputFormat.class);
+        roundOneJob.setInputFormatClass(TextInputFormat.class);
+        roundOneJob.setOutputFormatClass(TextOutputFormat.class);
 
-        FileInputFormat.addInputPath(job, new Path(args[0]));
-        FileOutputFormat.setOutputPath(job, new Path(args[1]));
+        FileInputFormat.addInputPath(roundOneJob, new Path(args[0]));
+        FileOutputFormat.setOutputPath(roundOneJob, new Path(args[1]));
 
 
-        job.waitForCompletion(true);
-        if (job.isSuccessful()) {
+        roundOneJob.waitForCompletion(true);
+        if (roundOneJob.isSuccessful()) {
 
         }
     }
