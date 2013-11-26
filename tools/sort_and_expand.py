@@ -30,11 +30,16 @@ def read_output(location):
 	
 
 def expand_with_actor_names(sorted_list, names):
-	
-	pass
+	new_list = []
+	for val in sorted_list:
+		actor_id, count = val
+		actor_name = names[actor_id]
+		new_val = (actor_name, count)
+		new_list.append(new_val)
+	return new_list
 
 
-#actor_names = get_actor_names_from_db()
+actor_names = get_actor_names_from_db()
 data = read_output("../data/Actor-Number.out")
-data = sorted(data,key=lambda x: x[1])
-print data
+data = sorted(data,key=lambda x: x[1])[::-1]
+print expand_with_actor_names(data, actor_names)
