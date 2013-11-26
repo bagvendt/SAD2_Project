@@ -96,7 +96,7 @@ public class Popular {
     public static void main(String[] args) throws Exception {
         Configuration conf = new Configuration();
 
-        Job roundOneJob = new Job(conf, "popular");
+        Job roundOneJob = new Job(conf, "Round01");
         roundOneJob.setJarByClass(dk.itu.sad2.Popular.class);
 
         roundOneJob.setOutputKeyClass(Text.class);
@@ -113,8 +113,22 @@ public class Popular {
 
 
         roundOneJob.waitForCompletion(true);
-        if (roundOneJob.isSuccessful()) {
 
+        if (roundOneJob.isSuccessful()) {
+            Job roundTwoJob = new Job(conf, "Round02");
+            roundTwoJob.setJarByClass(dk.itu.sad2.Popular.class);
+
+            roundTwoJob.setOutputKeyClass(Text.class);
+            roundTwoJob.setOutputValueClass(Text.class);
+
+            roundTwoJob.setMapperClass(RoundTwoMap.class);
+            roundTwoJob.setReducerClass(RoundTwoReduce.class);
+
+            roundTwoJob.setInputFormatClass(TextInputFormat.class);
+            roundTwoJob.setOutputFormatClass(TextOutputFormat.class);
+
+            FileInputFormat.addInputPath(roundTwoJob, new Path(args[2]));
+            FileOutputFormat.setOutputPath(roundTwoJob, new Path(args[3]));
         }
     }
 
