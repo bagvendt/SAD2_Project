@@ -54,4 +54,8 @@ else:
 
 data = read_output("../data/Actor-Number.out")
 data = sorted(data,key=lambda x: x[1])[::-1]
-print expand_with_actor_names(data, actor_names)
+
+result = expand_with_actor_names(data, actor_names)
+
+for val in result:
+	print val
