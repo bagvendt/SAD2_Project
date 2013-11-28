@@ -66,7 +66,7 @@
 
 \section{Problem 2 - Popular}
 \subsection{Introduction}
-In this section, we try to answer the question: "How many unique co-actors has a a given actor starred in at least one movie with". We will develop and run a Map-Reduce algorithm using the Hadoop framework, both locally and on the Amazon Elastic Cloud service.
+In this section, we try to answer the question: "How many unique co-actors has a a given actor starred in at least one movie with", in the following called the \emph{Popular} problem. We will develop and run a Map-Reduce algorithm using the Hadoop framework, both locally and on the Amazon Elastic Cloud service.
 \paragraph{}
 To validate and discuss the Map-Reduce implementation, we will create a sequential algorithm that also solves the \emph{Popular} problem. To make the Map-Reduce algorithm more interesting, we have have deliberately projected the IMDB dataset to a text file, in a format where each line contains the id of an actor followed by a list of movie ids, one id for each movie that actor starred in.\footnote{This forces the Map-Reduce algorithm to use 2 rounds of computation.}
 \paragraph{} 
@@ -74,9 +74,10 @@ To allow for comparison between the sequential and the Map-Reduce algorithms, we
 %TODO skriv noget om problem size, antal actors, antal movies, textfil størrelse
 \subsection{Sequential Algorithm}
 \label{sub:sequential}
-In our sequential algorithm we start by building a reverse index, that maps movies to actors. This allow us to check which actors apperead in which film in constant time. Building this index is done in \BigO{a*m} time, where \emph{a} is the number of actors and \emph{m} is the number of movies\\
+%TODO reference for inverted index
+In our sequential algorithm we start by building an inverted index, that maps movies to the actors that star in them. This allows us to check which actors appear in which film in constant time. Building the index takes \BigO{a*m} time, where \emph{a} is the number of actors and \emph{m} is the number of movies\\
 
-When the reverse index is build, we run through all of the actors, and for each actor we run through all the movies they have appeared in, and for all the movies they have appeared in, we note which actors are in those movies. For each actor a given actor has starred with we add it to that actors total. Even though all lookups are implemented to be done in constant time,  having 3 nested loops, we get a running time of \BigO{a^2*m}. In the end we output our data which takes another \BigO{a*m} time.\\
+When the inverted index is built, we iterate over all actors, and for each actor we iterate over the movies they appear in, and for each of those, we note their co-actors. For each co-actor a given actor has starred with we add it to that actors total. Even though all lookups are implemented to be done in constant time,  having 3 nested loops, we get a running time of \BigO{a^2*m}. Finally we write the output, which takes another \BigO{a*m} time.\\
 
 All this gives our sequential algorithm a running time of \BigO{a^2*m}. Even though we have found an upper bound, it is by no means a strict upper bound. If we envision a matrix with actors and movies, where each entry is 1 if the actor appeared in the movie, or empty otherwise, we can see that the matrix is pretty sparse with the given IMDB dataset. As a result the actual running time of our algorithm will be much lower.
 
@@ -123,17 +124,18 @@ To gauge the efficiency of our implementation, we look at three measures. The nu
 \paragraph{Number of rounds}
 The algorithm runs in a constant number of rounds (2), independent of the problem size. As mentioned previously, this can be reduced to a single round, if the input has the desired structure.
 
-\paragraph{Skewness of work distribution}
-The amount of work done in each mapper/reducer is close to balanced. Obviously, the round two reducer assigned to the most productive actor in the dataset, will do more work than the reducer assigned to an actor that only ever starred in a single movie, but in terms of the input size, these numbers are roughly equal. This is true because no single actor has played in a significant fraction of movies in the dataset.\\
+\paragraph{Work distribution (skewness)}
+The amount of work done in each mapper/reducer is close to being balanced. Obviously, the round two reducer assigned to the most productive actor in the dataset, will do more work than the reducer assigned to an actor that only star in a single movie, but in terms of the input size, these numbers are roughly equal. This is true because no single actor has played in a significant fraction of movies in the dataset.
+
 % TODO: Should we expand on "tricks", possibly with a ref
-If the dataset was close to being fully connected, additional tricks would be needed to balance the workload.
+If the above was not true, additional techniques, beyond the scope of this project, would be needed to balance the workload.
 
 \paragraph{Number of pairs}
 The number of pairs generated, is 2 for every unique pair of actors that starred in a movie together (Actor\textsubscript{A}, Actor\textsubscript{B}) and vice versa.\\
 
-This is a large amount of pairs, that we would like to reduce if possible. We cannot see how this is possible, without relaxing the constraint that a pair of actors should be counted only once. If that constraint is lifted, the round two mapper, can simply emit (Actor, Movies.Actors.count - 1), meaning that "this actor starred with x other actors in some movie". The reducers could then simply sum all those counts, to get the total.\\
+This is a large amount of pairs, that we would like to reduce. However, we cannot see how this is possible without relaxing the constraint that a pair of actors should be counted only once. If that constraint is lifted, the round two mapper, can simply emit (Actor, Movies.Actors.count - 1), meaning that "this actor starred with n other actors in some movie". The reducers could then simply sum all those counts, to get the total.\footnote{This optimization captures the same idea as the standard 'Wordcount' optimization example, where the mapper keeps a local dictionary of words and counts, instead of mindlessly emitting (word, 1) duplicate pairs multiple times.}\\
 % TODO: Should we analyse the other version as an approximation algorithm for the initial problem.
-The relaxed version of round two produces drastically fewer pairs (one pair for each actor, for each movie they starred in), compared to the strict version (two pairs for each unique pair of actors per movie). By making the mapper slightly smarter, the shuffler and reducers do much less work. But the end result answers a slightly different question.\footnote{This optimization captures the same idea as the standard 'Wordcount' optimization example, where the mapper keeps a local dictionary of words and counts, instead of mindlessly emitting (word, 1) pairs.}
+The relaxed version of round two produces drastically fewer pairs (one pair for each actor, for each movie they starred in), compared to the strict version (two pairs for each unique pair of actors per movie). By making the mapper slightly smarter, the shuffler and reducers do much less work. But it also solves a slightly different problem, than the one we are interested in.
 
 \subsection{Verification of results}
 We have designed the format of the output of our sequential algorithm, described in Section \ref{sub:sequential}, in such a way that it conforms to the format of the Map-Reduce algorithm described in Section \ref{sub:map-reduce}. 
@@ -141,7 +143,7 @@ The output is thus on the form:
 \begin{verbatim}
 [ 
   (Actor_ID_1, Count_1),
-  (Actor_ID_2, Count_1),
+  (Actor_ID_2, Count_2),
   ...
   (Actor_ID_n, Count_n)
 ]
@@ -149,8 +151,10 @@ The output is thus on the form:
 Since we have no guarantee that the row \texttt{Actor\_ID} is sorted in the output of the Map-Reduce algorithm, we have implemented a simple Python script \texttt{sort\_and\_expand.py}. 
 The role of this script is firstly to sort the input by \texttt{Actor\_ID} and secondly to add the first and last name of any given actor, for more readable output.
 
-Having three different outputs produced by the sequential algorithm, the Map-Reduce algorithm run on a local setup, and the Map-Reduce algorithm run on the Amazon Elastic MapReduce service, we then transform these outputs using the script.
-Using the UNIX tool \texttt{diff}, whose it is to output the difference between two files, we see that that all three outputs are exactly the same.
+Having three different outputs produced by a: the sequential algorithm, b: the Map-Reduce algorithm run on a local machine, and c: the Map-Reduce algorithm run on the Amazon Elastic MapReduce service, we then transform these outputs using the script.
+Using the UNIX tool \texttt{diff}, whose job it is to output the difference between two files, we see that that all three outputs are exactly the same.
+
+The fact that two algorithms, developed by different people, using different programming languages and different algorithmic paradigms, produce the same output, gives us a very high confidence in both implementations. The odds of introducing the same systematic error into both, are extremely low.
 
 The first 10 lines of the output, i.e the top 10 actors that has starred with most unique actors are: 
 \begin{verbatim}
