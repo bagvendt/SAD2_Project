@@ -17,8 +17,8 @@
 \usepackage{pdfpages}
 \usepackage{listings}
 \usepackage{color}
-\usepackage[T1]{fontenc}
-\usepackage{fixltx2e}
+\usepackage[T1]{fontenc} % use for allowing < and > in cleartext
+\usepackage{fixltx2e}    % use for textsubscript
 \newcommand{\BigO}[1]{\ensuremath{\operatorname{O}\left(#1\right)}}
 
 \bibliographystyle{plain}
@@ -26,6 +26,7 @@
 \date{1. December 2013}
 \title{Bla Bla Bla\\Underblabla}
 \author{Marcus Gregersen\and Martin Faartoft\and Rick Marker}
+%Overkill med forside / abstract / titel / undertitel?
 \clearpage\maketitle
 \thispagestyle{empty}
 \begin{abstract}
@@ -41,12 +42,15 @@ Lolleren abstract
 \subsection{Introduction}
 In this part of our report we are going to find out how many distinct co-actors an actor has starred with, using the Map-Reduce framework Hadoop. To be able to compare our findings, we have also created a sequential algorithm to perform the same task. To make our Map-Reduce algorithm interesting, we have projected our input data as a text file, where each line contains the id of an actor, followed by a list of movie ids. This was done to require our Map-Reduce alogrithm to need 2 rounds. To make the comparison fair, we have made our sequential algorithm work on the same input. The initial input data we have made our projections from, are the IMDB dataset.
 \subsection{Sequential Algorithm}
+\label{sub:sequential}
 In our sequential algorithm we start by building a reverse index, that maps movies to actors. This allow us to check which actors apperead in which film in constant time. Building this index is done in \BigO{a*m} time, where \emph{a} is the number of actors and \emph{m} is the number of movies\\
 
 When the reverse index is build, we run through all of the actors, and for each actor we run through all the movies they have appeared in, and for all the movies they have appeared in, we note which actors are in those movies. For each actor a given actor has starred with we add it to that actors total. Even though all lookups are implemented to be done in constant time,  having 3 nested loops, we get a running time of \BigO{a^2*m}. In the end we output our data which takes another \BigO{a*m} time.\\
 
 All this gives our sequential algorithm a running time of \BigO{a^2*m}. Even though we have found an upper bound, it is by no means a strict upper bound. If we envision a matrix with actors and movies, where each entry is 1 if the actor appeared in the movie, or empty otherwise, we can see that the matrix is pretty sparse with the given IMDB dataset. As a result the actual running time of our algorithm will be much lower.
+
 \subsection{Map-Reduce Algorithm}
+\label{sub:map-reduce}
 %MLFA
 Solving the \emph{Popular} problem using Map-Reduce with the specified input format, requires two rounds. The first round will re-project the original input, while the second round will count the number of unique pairings of actors.
 
@@ -58,6 +62,7 @@ The mappers break down the (Actor, List<Movie>) pairs into a series of (Movie, A
 The reducers each receive a list of (Movie, Actor) pairs (no reducer receives pairs with different keys), and builds from those a pair of shape (Movie, List<Actor>) by simply appending each actor to a list. The output of round one is thus, a pivot of the input data changing the shape from (Actor, List<Movie>) to (Movie, List<Actor>), essentially saying "this movie contained exactly these actors".
 
 \subsubsection{Round Two}
+\label{sub}
 Goal: Transform input pairs (Movie, List<Actor>) into output pairs (Actor, Count), where count is the number of unique co-actors this actor starred with in a movie.\\
 
 The mappers break down the (Movie, List<Actor>) pairs into all possible Actor-pairs along with their inverses.
@@ -68,17 +73,36 @@ for(actor a in actors)
 		if(a != b)
 			emit(a, b)
 
-This produces an amount of pairs that is quadratic in the number of actors in the movie, each capturing the information "Actor A played with Actor B in some movie)".\\
+This produces a number of pairs, that is quadratic in the number of actors in the movie, each capturing the information "Actor A played with Actor B in some movie)".\\
 
-The reducers each receive a list of (Actor\textsubscript{key}, Actor\textsubscript{value}) pairs
+The reducers each receive a list of (Actor\textsubscript{key}, Actor\textsubscript{value}) pairs, and using a Java HashSet, they filter out any duplicate pairs, and emit the final (Actor, count) pair. These pairs show the number of unique co-actors, a given actor has had during his career.
 
+\subsubsection{Analysis}
+To gauge the efficiency of our implementation, we look at three measures. The number of rounds in the computation, the amount of work done in each mapper/reducer in the worst case, and the number of pairs emitted.\\
 
+The algorithm runs in a constant number of rounds (2), independent of the problem size. As mentioned previously, this can be reduced to a single round, if the input has the desired structure.\\
 
-	hvor mange par?
-	kan det gøres med færre?
-		ja - HVIS vi er ligeglade med duplicates
+The amount of work done in each mapper/reducer is close to balanced. Obviously, the round two reducer assigned to the most productive actor in the dataset, will do more work than the reducer assigned to an actor that only ever starred in a single movie, but in terms of the input size, these numbers are roughly equal. This is true because no single actor has played in a significant fraction of movies in the dataset.\\
+If the dataset was close to being fully connected, additional tricks would be needed to balance the workload.
+
+The number of pairs generated, is 2 for every unique pair of actors that starred in a movie together (Actor\textsubscript{A}, Actor\textsubscript{B}) and vice versa.\\
+This is a large amount of pairs, that we would like to reduce if possible. We cannot see how this is possible, without relaxing the constraint that a pair of actors should be counted only once. If that constraint is lifted, the round two mapper, can simply emit (Actor, Movies.count - 1), meaning that "this actor starred with x other actors in some movie". The reducers could then simply sum all those counts, to get the total.\\
+The relaxed version of round two produces drastically fewer pairs (one pair for each actor, for each movie they starred in), compared to the strict version (two pairs for each unique pair of actors per movie). By making the mapper slightly smarter, the shuffler and reducers do much less work. But the end result answers a slightly different question.\footnote{This optimization captures the same idea as the standard 'Wordcount' optimization example, where the mapper keeps a local dictionary of words and counts, instead of mindlessly emitting (word, 1) pairs.}
 
 \subsection{Verification of results}
+We have designed the format of the output of our sequential algorithm, described in Section \ref{sub:sequential}, in such a way that it conforms to the format of the Map-Reduce algorithm described in Section \ref{sub:map-reduce}. 
+The output is thus on the form:
+\begin{verbatim}
+[ 
+  (Actor_1, Count_1),
+  (Actor_2, Count_1),
+  ...
+  (Actor_n, Count_n)
+]
+\end{verbatim}
+
+Having the three different outputs produced by the sequential algorithm, the Map-Reduce algorithm run on a local setup, and the Map-Reduce algorithm run on the Amazon Elastic MapReduce service. 
+
 %MABG
 \subsection{Benchmark}
 
