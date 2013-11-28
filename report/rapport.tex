@@ -25,6 +25,7 @@
 \date{1. December 2013}
 \title{Bla Bla Bla\\Underblabla}
 \author{Marcus Gregersen\and Martin Faartoft\and Rick Marker}
+%Overkill med forside / abstract / titel / undertitel?
 \clearpage\maketitle
 \thispagestyle{empty}
 \begin{abstract}
@@ -40,8 +41,10 @@ Lolleren abstract
 \subsection{Introduction}
 %RDAM
 \subsection{Sequential Algorithm}
+\label{sub:sequential}
 %RDAM
 \subsection{Map-Reduce Algorithm}
+\label{sub:map-reduce}
 %MLFA
 Solving the \emph{Popular} problem using Map-Reduce with the specified input format, requires two rounds. The first round will re-project the original input, while the second round will count the number of unique pairings of actors.
 
@@ -53,6 +56,7 @@ The mappers break down the (Actor, List<Movie>) pairs into a series of (Movie, A
 The reducers each receive a list of (Movie, Actor) pairs (no reducer receives pairs with different keys), and builds from those a pair of shape (Movie, List<Actor>) by simply appending each actor to a list. The output of round one is thus, a pivot of the input data changing the shape from (Actor, List<Movie>) to (Movie, List<Actor>), essentially saying "this movie contained exactly these actors".
 
 \subsubsection{Round Two}
+\label{sub}
 Goal: Transform input pairs (Movie, List<Actor>) into output pairs (Actor, Count), where count is the number of unique co-actors this actor starred with in a movie.\\
 
 The mappers break down the (Movie, List<Actor>) pairs into all possible Actor-pairs along with their inverses.
@@ -80,6 +84,19 @@ This is a large amount of pairs, that we would like to reduce if possible. We ca
 The relaxed version of round two produces drastically fewer pairs (one pair for each actor, for each movie they starred in), compared to the strict version (two pairs for each unique pair of actors per movie). By making the mapper slightly smarter, the shuffler and reducers do much less work. But the end result answers a slightly different question.\footnote{This optimization captures the same idea as the standard 'Wordcount' optimization example, where the mapper keeps a local dictionary of words and counts, instead of mindlessly emitting (word, 1) pairs.}
 
 \subsection{Verification of results}
+We have designed the format of the output of our sequential algorithm, described in Section \ref{sub:sequential}, in such a way that it conforms to the format of the Map-Reduce algorithm described in Section \ref{sub:map-reduce}. 
+The output is thus on the form:
+\begin{verbatim}
+[ 
+  (Actor_1, Count_1),
+  (Actor_2, Count_1),
+  ...
+  (Actor_n, Count_n)
+]
+\end{verbatim}
+
+Having the three different outputs produced by the sequential algorithm, the Map-Reduce algorithm run on a local setup, and the Map-Reduce algorithm run on the Amazon Elastic MapReduce service. 
+
 %MABG
 \subsection{Benchmark}
 
