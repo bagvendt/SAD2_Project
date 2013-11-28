@@ -19,6 +19,7 @@
 \usepackage{color}
 \usepackage[T1]{fontenc}
 \usepackage{fixltx2e}
+\newcommand{\BigO}[1]{\ensuremath{\operatorname{O}\left(#1\right)}}
 
 \bibliographystyle{plain}
 \begin{document}
@@ -38,9 +39,13 @@ Lolleren abstract
 
 \section{Problem 2 - Popular}
 \subsection{Introduction}
-%RDAM
+In this part of our report we are going to find out how many distinct co-actors an actor has starred with, using the Map-Reduce framework Hadoop. To be able to compare our findings, we have also created a sequential algorithm to perform the same task. To make our Map-Reduce algorithm interesting, we have projected our input data as a text file, where each line contains the id of an actor, followed by a list of movie ids. This was done to require our Map-Reduce alogrithm to need 2 rounds. To make the comparison fair, we have made our sequential algorithm work on the same input. The initial input data we have made our projections from, are the IMDB dataset.
 \subsection{Sequential Algorithm}
-%RDAM
+In our sequential algorithm we start by building a reverse index, that maps movies to actors. This allow us to check which actors apperead in which film in constant time. Building this index is done in \BigO{a*m} time, where \emph{a} is the number of actors and \emph{m} is the number of movies\\
+
+When the reverse index is build, we run through all of the actors, and for each actor we run through all the movies they have appeared in, and for all the movies they have appeared in, we note which actors are in those movies. For each actor a given actor has starred with we add it to that actors total. Even though all lookups are implemented to be done in constant time,  having 3 nested loops, we get a running time of \BigO{a^2*m}. In the end we output our data which takes another \BigO{a*m} time.\\
+
+All this gives our sequential algorithm a running time of \BigO{a^2*m}. Even though we have found an upper bound, it is by no means a strict upper bound. If we envision a matrix with actors and movies, where each entry is 1 if the actor appeared in the movie, or empty otherwise, we can see that the matrix is pretty sparse with the given IMDB dataset. As a result the actual running time of our algorithm will be much lower.
 \subsection{Map-Reduce Algorithm}
 %MLFA
 Solving the \emph{Popular} problem using Map-Reduce with the specified input format, requires two rounds. The first round will re-project the original input, while the second round will count the number of unique pairings of actors.
