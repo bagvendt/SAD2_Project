@@ -20,6 +20,9 @@
 \usepackage[T1]{fontenc} % use for allowing < and > in cleartext
 \usepackage{fixltx2e}    % use for textsubscript
 \newcommand{\BigO}[1]{\ensuremath{\operatorname{O}\left(#1\right)}}
+\definecolor{mygreen}{rgb}{0,0.6,0}
+\definecolor{mygray}{rgb}{0.5,0.5,0.5}
+\definecolor{mymauve}{rgb}{0.58,0,0.82}
 \lstset{ %
   backgroundcolor=\color{white},   % choose the background color; you must add \usepackage{color} or \usepackage{xcolor}
   basicstyle=\footnotesize,        % the size of the fonts that are used for the code
@@ -173,8 +176,17 @@ We realize that this is not a formal proof that the produces output is correct.
 
 %MABG
 \subsection{Benchmark}
-We have 
+We have carried out a small scale benchmark experiment to test the difference in running time between the sequential and the Map-Reduce algorithms, both in a local and in a distributed setup. 
+
+For the local setup we used a 2.5 GHz Intel Core i5 chip (denoted as $Local^*$ in the table). 
+
+In the distributed setup we used the online web service Amazon Elastic Mapreduce that runs a custom version of Hadoop. 
+
+The results of the experiment is seen in Table \ref{tab:benchmark}
+
 \begin{table}[h!]
+\label{tab:benchmark}
+\begin{center}
     \begin{tabular}{|l|l|l|l|l|}
     \hline
     Type       & Local / Distributed & Instances & Instance type                     & Time (sec) \\ \hline
@@ -185,7 +197,14 @@ We have
     Map-Reduce & Distributed         & 2         & m1.xlarge                         & 180                 \\ \hline
     Map-Reduce & Distributed         & 10        & m1.xlarge                         & 120                 \\ \hline
     \end{tabular}
+    \end{center}
+    \caption{The results of our experiment}
 \end{table}
+We realize that our experiment does not contain enough data to conclude anything, although it illustrates a tendency in the distributed setup that more powerfull instances yields a faster running time and more instances yields a faster running time. 
+
+The experiment also shows that the sequential algorithm in fact yields the fastest running time, we have been able to achieve. 
+It is our strong belief that if our algorithms were to be run on a significantly larger dataset we would see that the distributed setups would yield better running times.  
+
 
 \section{Appendix}
 \textbf{Popular.java - Map-Reduce}
