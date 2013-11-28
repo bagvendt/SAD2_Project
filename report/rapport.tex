@@ -176,11 +176,11 @@ We realize that this is not a formal proof that the produces output is correct.
 
 %MABG
 \subsection{Benchmark}
-We have carried out a small scale benchmark experiment to test the difference in running time between the sequential and the Map-Reduce algorithms, both in a local and in a distributed setup. 
+We have carried out a small scale benchmark experiment to test the difference in running time between the sequential and the Map-Reduce algorithms, the latter in both a local and a distributed setup. 
 
 For the local setup we used a 2.5 GHz Intel Core i5 chip (denoted as $Local^*$ in the table). 
 
-In the distributed setup we used the online web service Amazon Elastic Mapreduce that runs a custom version of Hadoop. 
+In the distributed setup we used the online web service Amazon Elastic Mapreduce that runs a customized version of Hadoop. 
 
 The results of the experiment is seen in Table \ref{tab:benchmark}
 
@@ -200,11 +200,10 @@ The results of the experiment is seen in Table \ref{tab:benchmark}
     \end{center}
     \caption{The results of our experiment}
 \end{table}
-We realize that our experiment does not contain enough data to conclude anything, although it illustrates a tendency in the distributed setup that more powerfull instances yields a faster running time and more instances yields a faster running time. 
+We realize that our experiment does not contain enough data to make any sweeping conclusions, but it does illustrates a tendency in the distributed setup that more powerful instances yield a faster running time and more instances yield a faster running time. 
 
 The experiment also shows that the sequential algorithm in fact yields the fastest running time, we have been able to achieve. 
-It is our strong belief that if our algorithms were to be run on a significantly larger dataset we would see that the distributed setups would yield better running times.  
-
+It is our strong belief that if the dataset was larger we would see the distributed setup execute significantly faster than the sequential.
 
 \section{Appendix}
 \textbf{Popular.java - Map-Reduce}
