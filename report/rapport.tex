@@ -36,7 +36,12 @@
 
 \section{Problem 2 - Popular}
 \subsection{Introduction}
-In this part of our report we are going to find out how many distinct co-actors an actor has starred with, using the Map-Reduce framework Hadoop. To be able to compare our findings, we have also created a sequential algorithm to perform the same task. To make our Map-Reduce algorithm interesting, we have projected our input data as a text file, where each line contains the id of an actor, followed by a list of movie ids. This was done to require our Map-Reduce alogrithm to need 2 rounds. To make the comparison fair, we have made our sequential algorithm work on the same input. The initial input data we have made our projections from, are the IMDB dataset.
+In this section, we try to answer the question: "How many unique co-actors has a a given actor starred in at least one movie with". We will develop and run a Map-Reduce algorithm using the Hadoop framework, both locally and on the Amazon Elastic Cloud service.
+\paragraph{}
+To validate and discuss the Map-Reduce implementation, we will create a sequential algorithm that also solves the \emph{Popular} problem. To make the Map-Reduce algorithm more interesting, we have have deliberately projected the IMDB dataset to a text file, in a format where each line contains the id of an actor followed by a list of movie ids, one id for each movie that actor starred in.\footnote{This forces the Map-Reduce algorithm to use 2 rounds of computation.}
+\paragraph{} 
+To allow for comparison between the sequential and the Map-Reduce algorithms, we have made the sequential algorithm accept the same input.
+%TODO skriv noget om problem size, antal actors, antal movies, textfil størrelse
 \subsection{Sequential Algorithm}
 \label{sub:sequential}
 In our sequential algorithm we start by building a reverse index, that maps movies to actors. This allow us to check which actors apperead in which film in constant time. Building this index is done in \BigO{a*m} time, where \emph{a} is the number of actors and \emph{m} is the number of movies\\
@@ -70,7 +75,7 @@ function RoundTwoMap(...)
                 emit(a, b)
 \end{verbatim}
 
-This produces a number of pairs, that is quadratic in the number of actors in the movie, each capturing the information "Actor A played with Actor B in some movie)".\\
+This produces a number of pairs quadratic in the number of actors in the movie, each capturing the information "Actor A played with Actor B in some movie)".\\
 
 The reducers each receive a list of (Actor\textsubscript{key}, Actor\textsubscript{value}) pairs, and using a Java HashSet, they filter out any duplicate pairs, and emit the final (Actor, count) pair. These pairs show the number of unique co-actors, a given actor has had during his career.
 
