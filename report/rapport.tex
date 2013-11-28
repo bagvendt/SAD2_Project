@@ -94,15 +94,15 @@ We have designed the format of the output of our sequential algorithm, described
 The output is thus on the form:
 \begin{verbatim}
 [ 
-  (Actor_1, Count_1),
-  (Actor_2, Count_1),
+  (Actor_ID_1, Count_1),
+  (Actor_ID_2, Count_1),
   ...
-  (Actor_n, Count_n)
+  (Actor_ID_n, Count_n)
 ]
 \end{verbatim}
+Since we have no guarantee that the row \texttt{Actor\_ID} is sorted in the Map-Reduce output, we have implemented a simple python script \texttt{sort\_and\_expand.py}
 
 Having the three different outputs produced by the sequential algorithm, the Map-Reduce algorithm run on a local setup, and the Map-Reduce algorithm run on the Amazon Elastic MapReduce service. 
-
 %MABG
 \subsection{Benchmark}
 
