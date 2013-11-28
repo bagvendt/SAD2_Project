@@ -29,10 +29,6 @@
 %Overkill med forside / abstract / titel / undertitel?
 \clearpage\maketitle
 \thispagestyle{empty}
-\begin{abstract}
-Lolleren abstract
-\end{abstract}
-\newpage
 \setcounter{page}{1}
 \section{Preface}
 \section{Problem 1 - Best buddies}
@@ -104,9 +100,21 @@ The output is thus on the form:
   (Actor_ID_n, Count_n)
 ]
 \end{verbatim}
-Since we have no guarantee that the row \texttt{Actor\_ID} is sorted in the Map-Reduce output, we have implemented a simple python script \texttt{sort\_and\_expand.py}
+Since we have no guarantee that the row \texttt{Actor\_ID} is sorted in the output of the Map-Reduce algorithm, we have implemented a simple Python script \texttt{sort\_and\_expand.py}. 
+The role of this script is firstly to sort the input by \texttt{Actor\_ID} and secondly to add the first and last name of any given actor, for more readable output.
 
-Having the three different outputs produced by the sequential algorithm, the Map-Reduce algorithm run on a local setup, and the Map-Reduce algorithm run on the Amazon Elastic MapReduce service. 
+Having three different outputs produced by the sequential algorithm, the Map-Reduce algorithm run on a local setup, and the Map-Reduce algorithm run on the Amazon Elastic MapReduce service, we then transform these outputs using the script.
+Using the UNIX tool \texttt{diff}, whose it is to output the difference between two files, we see that that all three outputs are exactly the same.
+
+The first 10 lines of the output, i.e the top 10 actors that has starred with most unique actors are: 
+\begin{verbatim}
+	
+\end{verbatim}
+
+
+
+
+
 %MABG
 \subsection{Benchmark}
 
