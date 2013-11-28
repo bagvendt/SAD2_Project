@@ -21,3 +21,11 @@ appendix
 	kildekode
 		map-reduce
 		sequential
+
+Bonus
+	Hvad sker der hvis der findes en skuespiller der har spillet i ALLE film overhovedet nogensinde?
+
+Del 2 idéer
+	Brug streaming (Misra-Gries / Count-min) til at finde antal actor-pairs der spiller sammen mindst k gange. Rasmus finder materiale.
+
+	Brug Brent's theorem til at se på hvordan running time skalerer med antal map-red maskiner

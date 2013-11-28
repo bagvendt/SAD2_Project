@@ -17,6 +17,8 @@
 \usepackage{pdfpages}
 \usepackage{listings}
 \usepackage{color}
+\usepackage[T1]{fontenc}
+\usepackage{fixltx2e}
 
 \bibliographystyle{plain}
 \begin{document}
@@ -41,6 +43,36 @@ Lolleren abstract
 %RDAM
 \subsection{Map-Reduce Algorithm}
 %MLFA
+Solving the \emph{Popular} problem using Map-Reduce with the specified input format, requires two rounds. The first round will re-project the original input, while the second round will count the number of unique pairings of actors.
+
+\subsubsection{Round One}
+Goal: Transform input pairs (Actor, List<Movie>) into output pairs (Movie, List<Actor>).\\
+
+The mappers break down the (Actor, List<Movie>) pairs into a series of (Movie, Actor) pairs, one for each Movie in the input List<Movie>, essentially saying "this actor played in this movie".\\
+
+The reducers each receive a list of (Movie, Actor) pairs (no reducer receives pairs with different keys), and builds from those a pair of shape (Movie, List<Actor>) by simply appending each actor to a list. The output of round one is thus, a pivot of the input data changing the shape from (Actor, List<Movie>) to (Movie, List<Actor>), essentially saying "this movie contained exactly these actors".
+
+\subsubsection{Round Two}
+Goal: Transform input pairs (Movie, List<Actor>) into output pairs (Actor, Count), where count is the number of unique co-actors this actor starred with in a movie.\\
+
+The mappers break down the (Movie, List<Actor>) pairs into all possible Actor-pairs along with their inverses.
+
+%TODO set up as nice pseudocode listing
+for(actor a in actors)
+	for(actor b in actors)
+		if(a != b)
+			emit(a, b)
+
+This produces an amount of pairs that is quadratic in the number of actors in the movie, each capturing the information "Actor A played with Actor B in some movie)".\\
+
+The reducers each receive a list of (Actor\textsubscript{key}, Actor\textsubscript{value}) pairs
+
+
+
+	hvor mange par?
+	kan det gøres med færre?
+		ja - HVIS vi er ligeglade med duplicates
+
 \subsection{Verification of results}
 %MABG
 \subsection{Benchmark}
