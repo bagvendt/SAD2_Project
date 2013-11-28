@@ -63,7 +63,7 @@ The reducers each receive a list of (Movie, Actor) pairs (no reducer receives pa
 
 \subsubsection{Round Two}
 \label{sub}
-Goal: Transform input pairs (Movie, List<Actor>) into output pairs (Actor, Count), where count is the number of unique co-actors this actor starred with in a movie.\\
+Goal: Transform input pairs (Movie, List<Actor>) into output pairs (Actor, Count), where count is the number of unique co-actors this actor has starred with in a movie.\\
 
 The mappers break down the (Movie, List<Actor>) pairs into all possible Actor-pairs along with their inverses.
 
@@ -75,7 +75,7 @@ function RoundTwoMap(...)
                 emit(a, b)
 \end{verbatim}
 
-This produces a number of pairs quadratic in the number of actors in the movie, each capturing the information "Actor A played with Actor B in some movie)".\\
+This produces a number of pairs, that is quadratic in the number of actors in the movie, each capturing the information "Actor A played with Actor B in some movie".\\
 
 The reducers each receive a list of (Actor\textsubscript{key}, Actor\textsubscript{value}) pairs, and using a Java HashSet, they filter out any duplicate pairs, and emit the final (Actor, count) pair. These pairs show the number of unique co-actors, a given actor has had during his career.
 
@@ -87,11 +87,14 @@ The algorithm runs in a constant number of rounds (2), independent of the proble
 
 \paragraph{Skewness of work distribution}
 The amount of work done in each mapper/reducer is close to balanced. Obviously, the round two reducer assigned to the most productive actor in the dataset, will do more work than the reducer assigned to an actor that only ever starred in a single movie, but in terms of the input size, these numbers are roughly equal. This is true because no single actor has played in a significant fraction of movies in the dataset.\\
+% TODO: Should we expand on "tricks", possibly with a ref
 If the dataset was close to being fully connected, additional tricks would be needed to balance the workload.
 
 \paragraph{Number of pairs}
 The number of pairs generated, is 2 for every unique pair of actors that starred in a movie together (Actor\textsubscript{A}, Actor\textsubscript{B}) and vice versa.\\
-This is a large amount of pairs, that we would like to reduce if possible. We cannot see how this is possible, without relaxing the constraint that a pair of actors should be counted only once. If that constraint is lifted, the round two mapper, can simply emit (Actor, Movies.count - 1), meaning that "this actor starred with x other actors in some movie". The reducers could then simply sum all those counts, to get the total.\\
+
+This is a large amount of pairs, that we would like to reduce if possible. We cannot see how this is possible, without relaxing the constraint that a pair of actors should be counted only once. If that constraint is lifted, the round two mapper, can simply emit (Actor, Movies.Actors.count - 1), meaning that "this actor starred with x other actors in some movie". The reducers could then simply sum all those counts, to get the total.\\
+% TODO: Should we analyse the other version as an approximation algorithm for the initial problem.
 The relaxed version of round two produces drastically fewer pairs (one pair for each actor, for each movie they starred in), compared to the strict version (two pairs for each unique pair of actors per movie). By making the mapper slightly smarter, the shuffler and reducers do much less work. But the end result answers a slightly different question.\footnote{This optimization captures the same idea as the standard 'Wordcount' optimization example, where the mapper keeps a local dictionary of words and counts, instead of mindlessly emitting (word, 1) pairs.}
 
 \subsection{Verification of results}
