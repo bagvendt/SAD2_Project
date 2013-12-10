@@ -1,8 +1,12 @@
 import sys
 import pickle
 
-k = 10
-
+k = 1000
+#num_actors = 817718
+#num_movies_with_actors = 300252
+#num_movies_total = 388269
+#res 2: 84546500.0004 (k: 200)
+#res 3: 845465.0 (k: 1000)
 max_range = 845465
 
 prime_1 = 845489.0
@@ -15,11 +19,11 @@ a_2 = 1176.0
 b_2 = 759.0
 
 def h1(x):
-    return ((a_1 * x + b_1) % prime_1) / max_range
+    return (((a_1 * x + b_1) % prime_1) % max_range) / max_range
 
 
 def h2(x):
-    return ((a_2 * x + b_2) % prime_2) / max_range
+    return (((a_2 * x + b_2) % prime_2) % max_range) / max_range
 
 
 def h(x,y):
@@ -105,13 +109,15 @@ def combine(S, F):
 
     S = set(temp_list[0:k])
 
-    print "Combine", v, S
+    print "Combine", v #, S
     return v, S
 
 
 actor_dict = get_actor_dict()
+print len(actor_dict)
 print "Done with the pickle"
 index = build_movie_to_actor_index(actor_dict)
+print len(index)
 print "Done building actor index"
 
 print dis_items(index)
