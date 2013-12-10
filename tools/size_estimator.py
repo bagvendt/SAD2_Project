@@ -1,7 +1,7 @@
 import sys
 import pickle
 
-k = 1024
+k = 20
 #num_actors = 817718
 #num_movies_with_actors = 300252
 #num_movies_total = 388269
@@ -23,7 +23,7 @@ a_2 = 1176.0
 b_2 = 759.0
 
 def h1(x):
-    return (((a_1 * x + b_1) % prime) % len(look_at)) / len(look_at)
+    return (((a_1 * x + b_1) % prime) % 621468) / 621468
 
 
 def h2(x):
@@ -32,6 +32,9 @@ def h2(x):
 
 def h(x,y):
     val = (h1(x) - h2(y)) % 1.0
+    if h1(x) > 1.0 or h2(y) > 1.0:
+        print "ALARM", h1(x), h2(y)
+        exit()
     return val
 
 
@@ -40,7 +43,7 @@ def sort_by_h1(Ai):
 
 
 def sort_by_h2(Ci):
-    return sorted(Ci, key=lambda x: h1(x))
+    return sorted(Ci, key=lambda x: h2(x))
 
 def get_actor_dict():
     #actor->list of movies
@@ -61,10 +64,10 @@ def build_movie_to_actor_index(actor_dict):
 
 def dis_items(movie_to_actor_index):
     #setup
-
+    count_temp = 0
     B = movie_to_actor_index.keys()
-    p_init = 0.7
-    p_max = p_init
+    p_init = 1
+    p_max = 1
 
     buffer_dict = {}
     for key in look_at:
@@ -86,17 +89,22 @@ def dis_items(movie_to_actor_index):
                 s_bar = (s_bar + 1) % len(Ai)
             s = s_bar
             while h(x[s], y[t]) < p_max and s_bar != (s-1) % len(Ai):
-                (S, F, p) = buffer_dict[x[s]] 
-                if h(x[s], y[t]) < p:
-                    F.add((x[s], y[t]))
-                    if len(F) == k:
-                        (p, S) = combine(S, F)
-                        buffer_dict[x[s]] = (S, set(), p)
-                        if p == p_max:
-                            p_max = find_p_max(buffer_dict)
+                if x[s] in movie_to_actor_index[i]:
+                    (S, F, p) = buffer_dict[x[s]] 
+                    if h(x[s], y[t]) < p:
+                        F.add((x[s], y[t]))
+                        if x[s] == 621468: 
+                            count_temp += 1
+                        if len(F) == k:
+                            (p, S) = combine(S, F)
+                            buffer_dict[x[s]] = (S, set(), p)
+                            if p == p_max:
+                                #p_max = find_p_max(buffer_dict)
+                                p_max = 1
 
                 s = (s + 1) % len(Ai)
     combine_all(buffer_dict)
+    print "Bess flowers F.add", count_temp 
     #(p, S) = combine(S, F)
     for key in buffer_dict:
         (S, F, p) = buffer_dict[key]
