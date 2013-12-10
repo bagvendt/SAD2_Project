@@ -55,34 +55,34 @@ def dis_items(movie_to_actor_index):
     F = set()
     S = set()
     B = movie_to_actor_index.keys()
-    p = 0.5
+    p = 0.7
 
     #algorithm
     for i in B:
-        print "Started interation i of the B-loop: " + str(i)
+        print "Doing B-loop: " + str(i)
         Ai = movie_to_actor_index[i]
         Ci = movie_to_actor_index[i]
+        #print len(Ai)
         x = sort_by_h1(Ai)
         y = sort_by_h2(Ci)
-        s_bar = 0 #0-indexes in python
+        s_bar = 0  # 0-indexes in python
         for t in range(0, len(Ci)):
-            print "Started interation of Ci: " + str(t)
             while h(x[s_bar], y[t]) > h(x[s_bar - 1], y[t]):
                 s_bar = (s_bar + 1) % len(Ai)
             s = s_bar
-            print "Done finding modulus pivot point - starting to check for p"
-            while h(x[s], y[t]) < p:
-                print 1
-                F.add((x[s], y[t]))
-                print 2
+            #print Ai,Ci,s,s_bar
+            #exit()
+            while h(x[s], y[t]) < p and s_bar != (s-1) % len(Ai):  # Never getting out - p = 0.7 NOT CORRECT - Does not get last one with!
+                meh = (x[s], y[t])
+                F.add(meh)
+                #print len(Ai), s, s_bar
                 if len(F) == k:
-                    print 3
+                    #print 3
                     (p, S) = combine(S, F)
-                    print 4
+                    #print 4
                     F.clear()
-                    print 5
+                    #print 5
                 s = (s + 1) % len(Ai)
-            print "Done checking for p - moving on"
     (p, S) = combine(S, F)
     if len(S) == k:
         return k / p
@@ -95,11 +95,12 @@ def combine(S, F):
     temp_list = sorted(temp_list, key=lambda t: h(t[0], t[1]))
 
     #find the k smallest elements in S union F, set them to S and return S and the median element
-
+    print temp_list, len(temp_list)
     x, y = temp_list[min(k-1, len(temp_list))]
     v = h(x, y)
 
     S = set(temp_list[0:k-1])
+
     print "Combine", v, S
     return v, S
 
