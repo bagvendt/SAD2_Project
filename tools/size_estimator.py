@@ -1,7 +1,7 @@
 import sys
 import pickle
 
-k = 30
+k = 10
 
 max_range = 845465
 
@@ -23,7 +23,8 @@ def h2(x):
 
 
 def h(x,y):
-    return (h1(x) - h2(y)) % 1.0
+    val = (h1(x) - h2(y)) % 1.0
+    return val
 
 
 def sort_by_h1(Ai):
@@ -59,7 +60,8 @@ def dis_items(movie_to_actor_index):
 
     #algorithm
     for i in B:
-        print "Doing B-loop: " + str(i)
+        if i % 1000 == 0:
+            print "Doing B-loop: " + str(i)
         Ai = movie_to_actor_index[i]
         Ci = movie_to_actor_index[i]
         #print len(Ai)
@@ -91,15 +93,17 @@ def dis_items(movie_to_actor_index):
 
 
 def combine(S, F):
+    print "in combine"
     temp_list = list(S.union(F))
     temp_list = sorted(temp_list, key=lambda t: h(t[0], t[1]))
 
     #find the k smallest elements in S union F, set them to S and return S and the median element
-    print temp_list, len(temp_list)
-    x, y = temp_list[min(k-1, len(temp_list))]
+    i = min(k-1, len(temp_list) - 1)
+    print "i was: " + str(i)
+    x, y = temp_list[i]
     v = h(x, y)
 
-    S = set(temp_list[0:k-1])
+    S = set(temp_list[0:k])
 
     print "Combine", v, S
     return v, S
