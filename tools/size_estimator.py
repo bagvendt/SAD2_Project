@@ -1,7 +1,7 @@
 import sys
 import pickle
 
-k = 200
+k = 1024
 #num_actors = 817718
 #num_movies_with_actors = 300252
 #num_movies_total = 388269
@@ -9,6 +9,9 @@ k = 200
 #res 3: 84546500.0 (k: 1000)
 #res(k=500) = 105683125
 #res(k=200) = 84545600
+
+look_at = [621468, 372839, 74450, 212581, 152868, 22585, 233082, 245158, 209799, 433904] # Top 10 film_count actors
+
 m = 845465 #largest item to be hashed
 
 prime = 845491.0
@@ -20,7 +23,7 @@ a_2 = 1176.0
 b_2 = 759.0
 
 def h1(x):
-    return (((a_1 * x + b_1) % prime) % m) / m
+    return (((a_1 * x + b_1) % prime) % len(look_at)) / len(look_at)
 
 
 def h2(x):
@@ -58,10 +61,14 @@ def build_movie_to_actor_index(actor_dict):
 
 def dis_items(movie_to_actor_index):
     #setup
-    F = set()
-    S = set()
+
     B = movie_to_actor_index.keys()
-    p = 0.7
+    p_init = 0.7
+    p_max = p_init
+
+    buffer_dict = {}
+    for key in look_at:
+        buffer_dict[key] = (set(), set(), p_init)
 
     #algorithm
     pos = 0
@@ -69,7 +76,7 @@ def dis_items(movie_to_actor_index):
         pos += 1
         if pos % 10000 == 0:
             print "Doing B-loop: " + str(round(100 * pos / float(len(B)), 2)) + "%"
-        Ai = movie_to_actor_index[i]
+        Ai = look_at
         Ci = movie_to_actor_index[i]
         x = sort_by_h1(Ai)
         y = sort_by_h2(Ci)
@@ -78,17 +85,25 @@ def dis_items(movie_to_actor_index):
             while h(x[s_bar], y[t]) > h(x[s_bar - 1], y[t]):
                 s_bar = (s_bar + 1) % len(Ai)
             s = s_bar
-            while h(x[s], y[t]) < p and s_bar != (s-1) % len(Ai):
-                F.add((x[s], y[t]))
-                if len(F) == k:
-                    (p, S) = combine(S, F)
-                    F.clear()
+            while h(x[s], y[t]) < p_max and s_bar != (s-1) % len(Ai):
+                (S, F, p) = buffer_dict[x[s]] 
+                if h(x[s], y[t]) < p:
+                    F.add((x[s], y[t]))
+                    if len(F) == k:
+                        (p, S) = combine(S, F)
+                        buffer_dict[x[s]] = (S, set(), p)
+                        if p == p_max:
+                            p_max = find_p_max(buffer_dict)
+
                 s = (s + 1) % len(Ai)
-    (p, S) = combine(S, F)
-    if len(S) == k:
-        return k / p
-    else:
-        return k**2
+    combine_all(buffer_dict)
+    #(p, S) = combine(S, F)
+    for key in buffer_dict:
+        (S, F, p) = buffer_dict[key]
+        if len(S) == k:
+            print key, k/p
+        else:
+            print key,k**2
 
 
 def combine(S, F):
@@ -104,6 +119,22 @@ def combine(S, F):
 
     print "Combined, new p=" + str(v)
     return v, S
+
+def find_p_max(buffer_dict):
+    p_max = 1
+    for key in buffer_dict:
+        (S, F, p) = buffer_dict[key]
+        if p > p_max:
+            p_max = p
+    return p_max 
+
+def combine_all(buffer_dict):
+    for key in buffer_dict:
+        (S, F, p) = buffer_dict[key]
+        if len(S) + len(F) > 0:
+            (p, S) = combine(S, F)
+            buffer_dict[key] = (S, set(), p)
+
 
 
 actor_dict = get_actor_dict()
