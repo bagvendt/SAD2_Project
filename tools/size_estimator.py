@@ -1,7 +1,8 @@
 import sys
 import pickle
+import random
 
-k = 2000
+k = 1024
 #num_actors = 817718
 #num_movies_with_actors = 300252
 #num_movies_total = 388269
@@ -12,18 +13,23 @@ k = 2000
 
 look_at = [621468, 372839, 74450, 212581, 152868, 22585, 233082, 245158, 209799, 433904] # Top 10 film_count actors
 
-m = 845465 #largest item to be hashed
+m = 845465  #largest item to be hashed
 
 prime = 845491.0
 
-a_1 = 1258.0
-b_1 = 8968.0
-
-a_2 = 1176.0
-b_2 = 759.0
+#a_1 = 1258.0
+a_1 = random.random() * 10000
+#b_1 = 8968.0
+b_1 = random.random() * 10000
+print "a_1,b_1", a_1, b_1
+#a_2 = 1176.0
+a_2 = random.random() * 10000
+#b_2 = 759.0
+b_2 = random.random() * 10000
+print "a_2,b_2",a_2,b_2
 
 def h1(x):
-    return (((a_1 * x + b_1) % prime) % 621468) / 621468
+    return (((a_1 * x + b_1) % prime) % 621468) / 621468  # Highest id by Bess
 
 
 def h2(x):
@@ -67,7 +73,7 @@ def dis_items(movie_to_actor_index):
     count_temp = 0
     B = movie_to_actor_index.keys()
     p_init = 1
-    p_max = 1
+    p_max = p_init
 
     buffer_dict = {}
     for key in look_at:
@@ -77,11 +83,12 @@ def dis_items(movie_to_actor_index):
     pos = 0
     for i in B:
         pos += 1
-        if pos % 10000 == 0:
-            print "Doing B-loop: " + str(round(100 * pos / float(len(B)), 2)) + "%"
+        # if pos % 10000 == 0:
+        #     print "Doing B-loop: " + str(round(100 * pos / float(len(B)), 2)) + "%"
         Ai = list(set(look_at).intersection(set(movie_to_actor_index[i])))
         if len(Ai) == 0:
             continue
+
         Ci = movie_to_actor_index[i]
 
         x = sort_by_h1(Ai)
@@ -91,29 +98,29 @@ def dis_items(movie_to_actor_index):
             while h(x[s_bar], y[t]) > h(x[s_bar - 1], y[t]):
                 s_bar = (s_bar + 1) % len(Ai)
             s = s_bar
-            while h(x[s], y[t]) < p_max and s_bar != (s-1) % len(Ai):
+            first = True
+            while h(x[s], y[t]) < p_max and (s_bar != s or first):
+                first = False
                 (S, F, p) = buffer_dict[x[s]] 
                 if h(x[s], y[t]) < p:
                     F.add((x[s], y[t]))
-                    if x[s] == 621468: 
+                    if x[s] == 621468:
                         count_temp += 1
                     if len(F) == k:
                         (p, S) = combine(S, F)
                         buffer_dict[x[s]] = (S, set(), p)
-                        if p == p_max:
-                            #p_max = find_p_max(buffer_dict)
-                            p_max = 1
+                        p_max = find_p_max(buffer_dict)
                 s = (s + 1) % len(Ai)
     combine_all(buffer_dict)
 
-    print "Bess flowers F.add", count_temp 
+    print "Bess Flowers F.add", count_temp
     #(p, S) = combine(S, F)
     for key in buffer_dict:
         (S, F, p) = buffer_dict[key]
         if len(S) == k:
             print key, k/p
         else:
-            print key,k**2
+            print key, k**2
 
 
 def combine(S, F):
@@ -127,7 +134,7 @@ def combine(S, F):
 
     S = set(temp_list[0:k])
 
-    print "Combined, new p=" + str(v)
+    #print "Combined, new p=" + str(v)
     return v, S
 
 def find_p_max(buffer_dict):
@@ -154,4 +161,4 @@ index = build_movie_to_actor_index(actor_dict)
 print len(index)
 print "Done building actor index"
 
-print dis_items(index)
+dis_items(index)
