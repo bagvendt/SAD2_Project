@@ -1,7 +1,7 @@
 import sys
 import pickle
 
-k = 20
+k = 2000
 #num_actors = 817718
 #num_movies_with_actors = 300252
 #num_movies_total = 388269
@@ -79,8 +79,11 @@ def dis_items(movie_to_actor_index):
         pos += 1
         if pos % 10000 == 0:
             print "Doing B-loop: " + str(round(100 * pos / float(len(B)), 2)) + "%"
-        Ai = look_at
+        Ai = list(set(look_at).intersection(set(movie_to_actor_index[i])))
+        if len(Ai) == 0:
+            continue
         Ci = movie_to_actor_index[i]
+
         x = sort_by_h1(Ai)
         y = sort_by_h2(Ci)
         s_bar = 0  # 0-indexes in python
@@ -89,21 +92,20 @@ def dis_items(movie_to_actor_index):
                 s_bar = (s_bar + 1) % len(Ai)
             s = s_bar
             while h(x[s], y[t]) < p_max and s_bar != (s-1) % len(Ai):
-                if x[s] in movie_to_actor_index[i]:
-                    (S, F, p) = buffer_dict[x[s]] 
-                    if h(x[s], y[t]) < p:
-                        F.add((x[s], y[t]))
-                        if x[s] == 621468: 
-                            count_temp += 1
-                        if len(F) == k:
-                            (p, S) = combine(S, F)
-                            buffer_dict[x[s]] = (S, set(), p)
-                            if p == p_max:
-                                #p_max = find_p_max(buffer_dict)
-                                p_max = 1
-
+                (S, F, p) = buffer_dict[x[s]] 
+                if h(x[s], y[t]) < p:
+                    F.add((x[s], y[t]))
+                    if x[s] == 621468: 
+                        count_temp += 1
+                    if len(F) == k:
+                        (p, S) = combine(S, F)
+                        buffer_dict[x[s]] = (S, set(), p)
+                        if p == p_max:
+                            #p_max = find_p_max(buffer_dict)
+                            p_max = 1
                 s = (s + 1) % len(Ai)
     combine_all(buffer_dict)
+
     print "Bess flowers F.add", count_temp 
     #(p, S) = combine(S, F)
     for key in buffer_dict:
