@@ -1,16 +1,17 @@
 import sys
 import pickle
 
-k = 1000
+k = 200
 #num_actors = 817718
 #num_movies_with_actors = 300252
 #num_movies_total = 388269
 #res 2: 84546500.0004 (k: 200)
-#res 3: 845465.0 (k: 1000)
-max_range = 845465
+#res 3: 84546500.0 (k: 1000)
+#res(k=500) = 105683125
+#res(k=200) = 84545600
+m = 845465 #largest item to be hashed
 
-prime_1 = 845489.0
-prime_2 = 845491.0
+prime = 845491.0
 
 a_1 = 1258.0
 b_1 = 8968.0
@@ -19,11 +20,11 @@ a_2 = 1176.0
 b_2 = 759.0
 
 def h1(x):
-    return (((a_1 * x + b_1) % prime_1) % max_range) / max_range
+    return (((a_1 * x + b_1) % prime) % m) / m
 
 
 def h2(x):
-    return (((a_2 * x + b_2) % prime_2) % max_range) / max_range
+    return (((a_2 * x + b_2) % prime) % m) / m
 
 
 def h(x,y):
@@ -63,12 +64,13 @@ def dis_items(movie_to_actor_index):
     p = 0.7
 
     #algorithm
+    pos = 0
     for i in B:
-        if i % 1000 == 0:
-            print "Doing B-loop: " + str(i)
+        pos += 1
+        if pos % 10000 == 0:
+            print "Doing B-loop: " + str(round(100 * pos / float(len(B)), 2)) + "%"
         Ai = movie_to_actor_index[i]
         Ci = movie_to_actor_index[i]
-        #print len(Ai)
         x = sort_by_h1(Ai)
         y = sort_by_h2(Ci)
         s_bar = 0  # 0-indexes in python
@@ -76,18 +78,11 @@ def dis_items(movie_to_actor_index):
             while h(x[s_bar], y[t]) > h(x[s_bar - 1], y[t]):
                 s_bar = (s_bar + 1) % len(Ai)
             s = s_bar
-            #print Ai,Ci,s,s_bar
-            #exit()
-            while h(x[s], y[t]) < p and s_bar != (s-1) % len(Ai):  # Never getting out - p = 0.7 NOT CORRECT - Does not get last one with!
-                meh = (x[s], y[t])
-                F.add(meh)
-                #print len(Ai), s, s_bar
+            while h(x[s], y[t]) < p and s_bar != (s-1) % len(Ai):
+                F.add((x[s], y[t]))
                 if len(F) == k:
-                    #print 3
                     (p, S) = combine(S, F)
-                    #print 4
                     F.clear()
-                    #print 5
                 s = (s + 1) % len(Ai)
     (p, S) = combine(S, F)
     if len(S) == k:
@@ -97,19 +92,17 @@ def dis_items(movie_to_actor_index):
 
 
 def combine(S, F):
-    print "in combine"
     temp_list = list(S.union(F))
     temp_list = sorted(temp_list, key=lambda t: h(t[0], t[1]))
 
     #find the k smallest elements in S union F, set them to S and return S and the median element
     i = min(k-1, len(temp_list) - 1)
-    print "i was: " + str(i)
     x, y = temp_list[i]
     v = h(x, y)
 
     S = set(temp_list[0:k])
 
-    print "Combine", v #, S
+    print "Combined, new p=" + str(v)
     return v, S
 
 
