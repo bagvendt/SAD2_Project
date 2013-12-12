@@ -17,6 +17,7 @@
 \usepackage{pdfpages}
 \usepackage{listings}
 \usepackage{color}
+\usepackage{latexsym}
 \usepackage[T1]{fontenc} % use for allowing < and > in cleartext
 \usepackage{fixltx2e}    % use for textsubscript
 \newcommand{\BigO}[1]{\ensuremath{\operatorname{O}\left(#1\right)}}
@@ -206,6 +207,10 @@ Computing the exact solution, using our Map-Reduce approach, may not scale well 
 
 \subsubsection{Equivalence of problems}
 The Popular problem can be expressed as a boolean matrix multiplication. Consider a matrix A of size $|actors|*|movies|$, where the value $1$ at position $(x, y)$ means that actor $x$ starred in movie $y$. $R = A * A^T$ will then have the dimensions $|actors|*|actors|$, and a $1$ at position $(x, y)$ signifies that actor $x$ and $y$ starred in at least one movie together. Summing the number of non-zero entries in $R_i,j$ for a given $i$, gives the number of unique actors that actor $i$ starred with at least once, which is exactly the value we want to compute.
+
+\subsubsection{Our Algorithm}
+To solve our problem we propose a variant of the algorithm shown by Amossen et al. in \cite{paper:Amossen}. Instead of approximating the total number of distinct values $\pi_{ac}(R_1 \Join R_2)$ for $R_1(a,b)$, $R_2(b,c)$, we are interested in estimating the number of distinct values $\pi_{ac}(R_1 \Join R_2)$ for each distinct value of $c$ for $c \subseteq a$ . % C subset af a
+As opposed to Amossen et al. where a single p, S and F are used, a seperate sketch for each value of $\pi_c(R_2)$ needs to be created. This means that buffers, sketches and approriate are kept seperate. To limit our lookups a $p_{max}$ variable is maintained containing the maximum value of all the $p$'s. This makes our second inner while-loop less optimized.
 
 %description
   %our algorithm (this is the idea, we made it as a twist on pagh) - RDAM
