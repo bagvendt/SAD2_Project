@@ -223,7 +223,7 @@ As opposed to Amossen et al. where a single p, S and F are used, a seperate sket
 \begin{algorithm}[H]
 \DontPrintSemicolon
   \Begin{
-
+    $p_{max}$ $\leftarrow$ $p$ \;
     $k$ $\leftarrow$ $\lceil 9 / \epsilon ^2 \rceil$ \;
     $F$ $\leftarrow$ $\emptyset$ \;
     
@@ -238,11 +238,13 @@ As opposed to Amossen et al. where a single p, S and F are used, a seperate sket
           $\bar{s}$ $\leftarrow$ $(\bar{s} + 1)$ mod $\left\vert A_{\pi} \right\vert$ \;
         }
         $s$ $\leftarrow$ $\bar{s}$ \;
-        \While{$h(x_s,y_t) < p$ }
+        \While{$h(x_s,y_t) < P_s$ }
         {
           $F_s$ $\leftarrow$ $F_s \cup \{ (x_s , y_t) \}$ \;
           \If{$\left\vert F_s \right\vert$ = k}{
-            ($p_s,S_s$) $\leftarrow$ \texttt{COMBINE}($S_s,F_s$) \;
+            ($P_s,S_s$) $\leftarrow$ \texttt{COMBINE}($S_s,F_s$) \;
+
+            $p_{max}$ $\leftarrow$ max(P) \;
             $F_s$ $\leftarrow$ $\emptyset$ \;
           }
           $s$ $\leftarrow$ $(s + 1)$ mod $\left\vert A_{\pi} \right\vert$ \;
