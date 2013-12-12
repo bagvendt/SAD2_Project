@@ -216,7 +216,7 @@ The Popular problem can be expressed as a boolean matrix multiplication. Conside
 Following TODO PAGH REF, we split the analysis of the running time into two.
 The first part considers the \emph{while} loop on lines TODO - TODO, and the second part considers the remaining work done.
 
-\emph{while loop}. Every iteration will add at most one pair $(x_s, y_t)$ to one of the buffers, $F_i$. We can only safely exit the loop if $h(x_s, y_t) < p_{max}$, but a candidate pair will not be added unless $h(x_s, y_t) < p_s$, effectively wasting a number of iterations, proportional to $p_{max}-p_i$. Thus the expected number of iterations are $O(p_{max}|A_i||C_i|)$.
+\textit{while loop}. Every iteration will add at most one pair $(x_s, y_t)$ to one of the buffers, $F_i$. We can only safely exit the loop if $h(x_s, y_t) < p_{max}$, but a candidate pair will not be added unless $h(x_s, y_t) < p_s$, effectively wasting a number of iterations, proportional to $p_{max}-p_i$. Thus the expected number of iterations are $O(p_{max}|A_i||C_i|)$.
 
 Remaining work\\
 The intersection on line TODO, can be done in $O(|C_i|)$ time, using a hashtable.
