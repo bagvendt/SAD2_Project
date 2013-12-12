@@ -54,18 +54,14 @@
 \bibliographystyle{plain}
 \begin{document}
 \date{1. December 2013}
-\title{Finding Hollywood's most Productive\\Using Map-Reduce (and Streaming?) FIXME}
+\title{Finding Hollywood's most Popular\\Using Map-Reduce and Approximation}
 
 \author{Marcus Gregersen\and Martin Faartoft\and Rick Marker}
 %Overkill med forside / abstract / titel / undertitel?
 \clearpage\maketitle
 \thispagestyle{empty}
 \setcounter{page}{1}
-\section{Preface}
-\section{Problem 1 - Best buddies}
-In this section, we attempt to count the most productive actor pairs, ordering them by the number of movies they starred in together. This problem will most likely not be treated, and this section will not be in the final report. 
-
-\section{Problem 2 - Popular}
+\section{The "Popular" problem}
 \subsection{Introduction}
 In this section, we try to answer the question: "How many unique co-actors has a a given actor starred alongside", we call this the \emph{Popular} problem. In the following, we will develop and execute a Map-Reduce algorithm using the Hadoop framework, both locally and on the Amazon Elastic Cloud service.
 \paragraph{}
@@ -73,7 +69,7 @@ To validate and compare the Map-Reduce implementation, we will implement a simpl
 \paragraph{} 
 To allow for comparison between the sequential and the Map-Reduce algorithms, we have made the sequential algorithm accept the same input.
 %TODO skriv noget om problem size, antal actors, antal movies, textfil størrelse
-\subsection{Sequential Algorithm}
+\subsection{Naïve Sequential Algorithm}
 \label{sub:sequential}
 %TODO reference for inverted index
 In the sequential algorithm we build an inverted index, that maps movies to the actors that star in them. This allows us to check which actors appear in which film in constant time. Building the index takes \BigO{a*m} time, where \emph{a} is the number of actors and \emph{m} is the number of movies\\
@@ -205,10 +201,13 @@ Our experiment does not contain enough data to make any sweeping conclusions, bu
 The experiment also shows that the sequential algorithm yields the fastest running time, we have been able to achieve. 
 It is our strong belief that if the dataset was larger we would see the distributed setup execute significantly faster than the sequential.
 
-%TODO do something about combine
-%motivation MLFA
+\subsection{Solving the "Popular" problem by approximation}
+Computing the exact solution, using our Map-Reduce approach, may not scale well with the size of the input, due to the number of pairs emitted. In the following, we suggest an algorithm for approximating the solution, building on previous results by TODO REF PAGH.
+
+\subsubsection{Equivalence of problems}
+The Popular problem can be expressed as a boolean matrix multiplication. Consider a matrix A of size $|actors|*|movies|$, where the value $1$ at position $(x, y)$ means that actor $x$ starred in movie $y$. $R = A * A^T$ will then have the dimensions $|actors|*|actors|$, and a $1$ at position $(x, y)$ signifies that actor $x$ and $y$ starred in at least one movie together. Summing the number of non-zero entries in $R_i,j$ for a given $i$, gives the number of unique actors that actor $i$ starred with at least once, which is exactly the value we want to compute.
+
 %description
-  %equivalence of problems
   %our algorithm (this is the idea, we made it as a twist on pagh) - RDAM
   %universal hashing??? move to reference?
 %pseudocode MABG
@@ -233,6 +232,7 @@ It is our strong belief that if the dataset was larger we would see the distribu
 
 %potential improvements
   %tighten inner loop in case len(Ai) == 1
+  %do something about combine
 
 %conclusion
 
