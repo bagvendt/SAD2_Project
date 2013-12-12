@@ -1,8 +1,7 @@
-import sys
 import pickle
 import random
 
-k = 1024
+k = 256
 #num_actors = 817718
 #num_movies_with_actors = 300252
 #num_movies_total = 388269
@@ -106,7 +105,7 @@ def dis_items(movie_to_actor_index):
     for key in buffer_dict:
         (S, F, p) = buffer_dict[key]
         if len(S) == k:
-            print key, k/p
+            print key, int(k/p)
         else:
             print key, None
 
@@ -143,3 +142,5 @@ def combine_all(buffer_dict):
 actor_dict = get_actor_dict()
 index = build_movie_to_actor_index(actor_dict)
 dis_items(index)
+
+
