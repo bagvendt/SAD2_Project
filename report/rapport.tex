@@ -226,14 +226,12 @@ The first part considers the \emph{while} loop on lines TODO - TODO, and the sec
 
 Remaining work\\
 The intersection on line TODO, can be done in $O(|C_i|)$ time, using a hashtable.
-Updating $P_{max}$ can be done in $log(|W|)$ time, using a Heap.
-    %mention p_max update
+Updating $P_{max}$ on line TODO can be done in $log(|W|)$ time, using a Heap.
       %it is important to set a tight initial p_max
     %worst-case time-complexity is the same as pagh
 
 \paragraph{Space Usage}
 The algorithm uses $O(W*k)$ space, since it has to maintain $W$ individual sketches, each of size $k$. It is worth noting, that the space usage is independent of the input size $n$.
-  %a factor len(look_at) greater than pagh
   %quality of approximation
   %io
     %locality of reference?
@@ -243,8 +241,9 @@ The algorithm uses $O(W*k)$ space, since it has to maintain $W$ individual sketc
 %related works 
   %Bar-Yossef og Pagh
 
-%potential improvements
-  %tighten inner loop in case len(Ai) == 1
+\subsubsection{Suggested Improvements}
+If $|W|<<n$ and the matrix is sparse, $|A_{\pi}|=1$ will occur often, Corresponding to iterating over a movie starring exactly one of the actors on the watchlist. In this case, the inner loop is poorly optimized. Firstly $p_i$ could be used, instead of $p_{max}$, and secondly it could be exploited that the values of $h(x_s, y_t)$ becomes smaller mod 1, when $t$ increases. Using a trick analogous to (TODO sbar while loop) could lower the bound on the inner loop from $O(p_{max}|A_i||C_i|)$ to $O(p|C_i|)$.
+
   %do something about combine
 
 %conclusion
