@@ -205,24 +205,37 @@ Our experiment does not contain enough data to make any sweeping conclusions, bu
 The experiment also shows that the sequential algorithm yields the fastest running time, we have been able to achieve. 
 It is our strong belief that if the dataset was larger we would see the distributed setup execute significantly faster than the sequential.
 
+%TODO do something about combine
 %motivation
 %description
   %idea
   %equivalence of problems
+  %universal hashing
 %pseudocode
 %analysis
   %run-time
+    %sketch up pagh analysis
+    %mention intersection inside B-loop
+    %mention p_max update
+      %it is important to set a tight initial p_max
+    %worst-case time-complexity is the same as pagh
+
+  %space usage
+    %a factor len(look_at) greater than pagh
   %quality of approximation
   %io
-    %
+    %locality of reference?
 %experiments
   %plots
-
+  %comparing results with part 1
 %related works 
   %Bar-Yossef og Pagh
 
 %potential improvements
   %tighten inner loop in case len(Ai) == 1
+
+%conclusion
+
 
 %code in appendix
 

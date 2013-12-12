@@ -104,17 +104,12 @@ def dis_items(movie_to_actor_index):
                 (S, F, p) = buffer_dict[x[s]] 
                 if h(x[s], y[t]) < p:
                     F.add((x[s], y[t]))
-                    if x[s] == 621468:
-                        count_temp += 1
                     if len(F) == k:
                         (p, S) = combine(S, F)
                         buffer_dict[x[s]] = (S, set(), p)
                         p_max = find_p_max(buffer_dict)
                 s = (s + 1) % len(Ai)
     combine_all(buffer_dict)
-
-    print "Bess Flowers F.add", count_temp
-    #(p, S) = combine(S, F)
     for key in buffer_dict:
         (S, F, p) = buffer_dict[key]
         if len(S) == k:
