@@ -216,16 +216,23 @@ As opposed to Amossen et al. where a single p, S and F are used, a seperate sket
   %our algorithm (this is the idea, we made it as a twist on pagh) - RDAM
   %universal hashing??? move to reference?
 %pseudocode MABG
-%analysis
-  %run-time
-    %sketch up pagh analysis
-    %mention intersection inside B-loop
+\subsubsection{Analysis}
+\paragraph {Running Time}
+Following TODO PAGH REF, we split the analysis of the running time into two.
+The first part considers the \emph{while} loop on lines TODO - TODO, and the second part considers the remaining work done.
+
+\emph{while loop}. Every iteration will add at most one pair $(x_s, y_t)$ to one of the buffers, $F_i$. We can only safely exit the loop if $h(x_s, y_t) < p_{max}$, but a candidate pair will not be added unless $h(x_s, y_t) < p_s$, effectively wasting a number of iterations, proportional to $p_{max}-p_i$. Thus the expected number of iterations are $O(p_{max}|A_i||C_i|)$.
+
+Remaining work\\
+The intersection on line TODO, can be done in $O(|C_i|)$ time, using a hashtable.
+Updating $P_{max}$ can be done in $log(|W|)$ time, using a Heap.
     %mention p_max update
       %it is important to set a tight initial p_max
     %worst-case time-complexity is the same as pagh
 
-  %space usage
-    %a factor len(look_at) greater than pagh
+\paragraph{Space Usage}
+The algorithm uses $O(W*k)$ space, since it has to maintain $W$ individual sketches, each of size $k$. It is worth noting, that the space usage is independent of the input size $n$.
+  %a factor len(look_at) greater than pagh
   %quality of approximation
   %io
     %locality of reference?
