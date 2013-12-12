@@ -20,6 +20,7 @@
 \usepackage{latexsym}
 \usepackage[T1]{fontenc} % use for allowing < and > in cleartext
 \usepackage{fixltx2e}    % use for textsubscript
+\usepackage[linesnumbered,boxed,ruled]{algorithm2e}
 \newcommand{\BigO}[1]{\ensuremath{\operatorname{O}\left(#1\right)}}
 \definecolor{mygreen}{rgb}{0,0.6,0}
 \definecolor{mygray}{rgb}{0.5,0.5,0.5}
@@ -216,7 +217,55 @@ As opposed to Amossen et al. where a single p, S and F are used, a seperate sket
 %description
   %our algorithm (this is the idea, we made it as a twist on pagh) - RDAM
   %universal hashing??? move to reference?
-%pseudocode MABG
+\subsection{Pseudocode} % (fold)
+\label{sub:pseudocode}
+% Fix så det bliver til procedure
+\begin{algorithm}[H]
+\DontPrintSemicolon
+  \Begin{
+
+    $k$ $\leftarrow$ $\lceil 9 / \epsilon ^2 \rceil$ \;
+    $F$ $\leftarrow$ $\emptyset$ \;
+    
+    \For{$i$ $\in$ $B$}{
+      $A_{\pi}$ $\leftarrow$ $A_i \cap W$ \;
+      $x$ $\leftarrow$ $A_{\pi}$ sorted according to $h_1$-value\;
+      $y$ $\leftarrow$ $C_i$ sorted according to $h_2$-value\;
+      $\bar{s}$ $\leftarrow$ $1$ \;
+      \For{$t$ := 1 to $\left\vert C_i \right\vert$}{ 
+        \While{$h(x_{\bar{s}}, y_t)$ $>$ $h(x_{( \bar{s} -1) mod \left\vert A_{\pi} \right\vert}, y_t)$} %Fix denne linie
+        {
+          $\bar{s}$ $\leftarrow$ $(\bar{s} + 1)$ mod $\left\vert A_{\pi} \right\vert$ \;
+        }
+        $s$ $\leftarrow$ $\bar{s}$ \;
+        \While{$h(x_s,y_t) < p$ }
+        {
+          $F_s$ $\leftarrow$ $F_s \cup \{ (x_s , y_t) \}$ \;
+          \If{$\left\vert F_s \right\vert$ = k}{
+            ($p_s,S_s$) $\leftarrow$ \texttt{COMBINE}($S_s,F_s$) \;
+            $F_s$ $\leftarrow$ $\emptyset$ \;
+          }
+          $s$ $\leftarrow$ $(s + 1)$ mod $\left\vert A_{\pi} \right\vert$ \;
+        }
+        }
+      
+
+      }
+      $R$ $\leftarrow$ $\emptyset$ \;
+      \For{$u := 1 \in W$}{ 
+        ($p_u,S_u$) $\leftarrow$ \texttt{COMBINE}($S_u,F_u$) \;
+        \If{$\left\vert S_u \right\vert$ = k}{
+          $R$ $\leftarrow$ $R \cup \{ (k / p_u, u) \}$ \;
+        }
+        \Else{
+           $R$ $\leftarrow$ $R \cup \{ (0, u) \}$ \;
+        }
+      }
+      \Return $R$
+      }
+   
+\caption{Pseudocode for actor pair estimation\label{alg:MAVC}}
+\end{algorithm}
 \subsubsection{Analysis}
 \paragraph {Running Time}
 Following TODO PAGH REF, we split the analysis of the running time into two.
