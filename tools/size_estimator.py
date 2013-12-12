@@ -11,7 +11,8 @@ k = 1024
 #res(k=500) = 105683125
 #res(k=200) = 84545600
 
-look_at = [621468, 372839, 74450, 212581, 152868, 22585, 233082, 245158, 209799, 433904] # Top 10 film_count actors
+look_at = [621468, 372839, 74450, 212581, 152868, 22585,
+           233082, 245158, 209799, 433904] # Top 10 film_count actors
 
 m = 845465  #largest item to be hashed
 
@@ -21,20 +22,16 @@ prime = 845491.0
 a_1 = random.random() * 10000
 #b_1 = 8968.0
 b_1 = random.random() * 10000
-print "a_1,b_1", a_1, b_1
 #a_2 = 1176.0
 a_2 = random.random() * 10000
 #b_2 = 759.0
 b_2 = random.random() * 10000
-print "a_2,b_2",a_2,b_2
 
 def h1(x):
-    return (((a_1 * x + b_1) % prime) % 621468) / 621468  # Highest id by Bess
-
+    return (((a_1 * x + b_1) % prime) % max(look_at)) / max(look_at)
 
 def h2(x):
     return (((a_2 * x + b_2) % prime) % m) / m
-
 
 def h(x,y):
     val = (h1(x) - h2(y)) % 1.0
@@ -42,7 +39,6 @@ def h(x,y):
         print "ALARM", h1(x), h2(y)
         exit()
     return val
-
 
 def sort_by_h1(Ai):
     return sorted(Ai, key=lambda x: h1(x))
@@ -70,7 +66,6 @@ def build_movie_to_actor_index(actor_dict):
 
 def dis_items(movie_to_actor_index):
     #setup
-    count_temp = 0
     B = movie_to_actor_index.keys()
     p_init = 1
     p_max = p_init
@@ -83,8 +78,6 @@ def dis_items(movie_to_actor_index):
     pos = 0
     for i in B:
         pos += 1
-        # if pos % 10000 == 0:
-        #     print "Doing B-loop: " + str(round(100 * pos / float(len(B)), 2)) + "%"
         Ai = list(set(look_at).intersection(set(movie_to_actor_index[i])))
         if len(Ai) == 0:
             continue
@@ -115,20 +108,20 @@ def dis_items(movie_to_actor_index):
         if len(S) == k:
             print key, k/p
         else:
-            print key, k**2
-
+            print key, None
 
 def combine(S, F):
     temp_list = list(S.union(F))
     temp_list = sorted(temp_list, key=lambda t: h(t[0], t[1]))
 
-    #find the k smallest elements in S union F, set them to S and return S and the median element
+    """
+    find the k smallest elements in S union F, set them to S and return S and 
+    the median element
+    """
     i = min(k-1, len(temp_list) - 1)
     x, y = temp_list[i]
     v = h(x, y)
-
     S = set(temp_list[0:k])
-
     #print "Combined, new p=" + str(v)
     return v, S
 
@@ -147,13 +140,6 @@ def combine_all(buffer_dict):
             (p, S) = combine(S, F)
             buffer_dict[key] = (S, set(), p)
 
-
-
 actor_dict = get_actor_dict()
-print len(actor_dict)
-print "Done with the pickle"
 index = build_movie_to_actor_index(actor_dict)
-print len(index)
-print "Done building actor index"
-
 dis_items(index)
