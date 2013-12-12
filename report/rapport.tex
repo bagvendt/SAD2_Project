@@ -20,6 +20,7 @@
 \usepackage{latexsym}
 \usepackage[T1]{fontenc} % use for allowing < and > in cleartext
 \usepackage{fixltx2e}    % use for textsubscript
+\usepackage[linesnumbered,boxed,ruled]{algorithm2e}
 \newcommand{\BigO}[1]{\ensuremath{\operatorname{O}\left(#1\right)}}
 \definecolor{mygreen}{rgb}{0,0.6,0}
 \definecolor{mygray}{rgb}{0.5,0.5,0.5}
@@ -206,8 +207,8 @@ It is our strong belief that if the dataset was larger we would see the distribu
 Computing the exact solution, using our Map-Reduce approach, may not scale well with the size of the input, due to the number of pairs emitted. In the following, we suggest an algorithm for approximating the solution, building on previous results by TODO REF PAGH.
 
 \subsubsection{Equivalence of problems}
-The Popular problem can be expressed as a boolean matrix multiplication. Consider a matrix A of size $|actors|*|movies|$, where the value $1$ at position $(x, y)$ means that actor $x$ starred in movie $y$. $R = A * A^T$ will then have the dimensions $|actors|*|actors|$, and a $1$ at position $(x, y)$ signifies that actor $x$ and $y$ starred in at least one movie together. Summing the number of non-zero entries in $R_{i,j}$ for a given $i$, gives the number of unique actors that actor $i$ starred with at least once, which is exactly the value we want to compute.\\
-Additionally, matrix multiplication can be expressed as the \emph{join-distinct} operation from relational algebra as follows: Consider the boolean matrix multiplication: $R = A * C$. Let the relation $R_1$ be the pairs corresponding to the non-zero values in A, and the $R_2$ be the pairs corresponding to non-zero values in C. Now each unique pair in $R_1 \Join R_2$ will correspond to a non-zero value in R.
+The Popular problem can be expressed as a boolean matrix multiplication. Consider a matrix A of size $|actors|*|movies|$, where the value $1$ at position $(x, y)$ means that actor $x$ starred in movie $y$. $R = A * A^T$ will then have the dimensions $|actors|*|actors|$, and a $1$ at position $(x, y)$ indicates that actor $x$ and $y$ starred in at least one movie together. Summing the number of non-zero entries in $R_{i,j}$ for a given $i$, gives the number of unique actors that actor $i$ starred with at least once, which is exactly the value we want to compute.\\
+Additionally, matrix multiplication can be expressed as the \emph{join-distinct} operation from relational algebra as follows: Consider the boolean matrix multiplication: $R = A \cdot C$. Let the relation $R_1$ be the pairs corresponding to the non-zero values in A, and the $R_2$ be the pairs corresponding to non-zero values in C. Now each unique pair in $R_1 \Join R_2$ will correspond to a non-zero value in R.
 
 \subsubsection{Our Algorithm}
 To solve our problem we propose a variant of the algorithm shown by Amossen et al. in \cite{paper:Amossen}. Instead of approximating the total number of distinct values $\pi_{ac}(R_1 \Join R_2)$ for $R_1(a,b)$, $R_2(b,c)$, we are interested in estimating the number of distinct values $\pi_{ac}(R_1 \Join R_2)$ for each distinct value of $c$ for $c \subseteq a$ . % C subset af a
@@ -216,7 +217,55 @@ As opposed to Amossen et al. where a single p, S and F are used, a seperate sket
 %description
   %our algorithm (this is the idea, we made it as a twist on pagh) - RDAM
   %universal hashing??? move to reference?
-%pseudocode MABG
+\subsection{Pseudocode} % (fold)
+\label{sub:pseudocode}
+% Fix så det bliver til procedure
+\begin{algorithm}[H]
+\DontPrintSemicolon
+  \Begin{
+
+    $k$ $\leftarrow$ $\lceil 9 / \epsilon ^2 \rceil$ \;
+    $F$ $\leftarrow$ $\emptyset$ \;
+    
+    \For{$i$ $\in$ $B$}{
+      $A_{\pi}$ $\leftarrow$ $A_i \cap W$ \;
+      $x$ $\leftarrow$ $A_{\pi}$ sorted according to $h_1$-value\;
+      $y$ $\leftarrow$ $C_i$ sorted according to $h_2$-value\;
+      $\bar{s}$ $\leftarrow$ $1$ \;
+      \For{$t$ := 1 to $\left\vert C_i \right\vert$}{ 
+        \While{$h(x_{\bar{s}}, y_t)$ $>$ $h(x_{( \bar{s} -1) mod \left\vert A_{\pi} \right\vert}, y_t)$} %Fix denne linie
+        {
+          $\bar{s}$ $\leftarrow$ $(\bar{s} + 1)$ mod $\left\vert A_{\pi} \right\vert$ \;
+        }
+        $s$ $\leftarrow$ $\bar{s}$ \;
+        \While{$h(x_s,y_t) < p$ }
+        {
+          $F_s$ $\leftarrow$ $F_s \cup \{ (x_s , y_t) \}$ \;
+          \If{$\left\vert F_s \right\vert$ = k}{
+            ($p_s,S_s$) $\leftarrow$ \texttt{COMBINE}($S_s,F_s$) \;
+            $F_s$ $\leftarrow$ $\emptyset$ \;
+          }
+          $s$ $\leftarrow$ $(s + 1)$ mod $\left\vert A_{\pi} \right\vert$ \;
+        }
+        }
+      
+
+      }
+      $R$ $\leftarrow$ $\emptyset$ \;
+      \For{$u := 1 \in W$}{ 
+        ($p_u,S_u$) $\leftarrow$ \texttt{COMBINE}($S_u,F_u$) \;
+        \If{$\left\vert S_u \right\vert$ = k}{
+          $R$ $\leftarrow$ $R \cup \{ (k / p_u, u) \}$ \;
+        }
+        \Else{
+           $R$ $\leftarrow$ $R \cup \{ (0, u) \}$ \;
+        }
+      }
+      \Return $R$
+      }
+   
+\caption{Pseudocode for actor pair estimation\label{alg:MAVC}}
+\end{algorithm}
 \subsubsection{Analysis}
 \paragraph {Running Time}
 Following TODO PAGH REF, we split the analysis of the running time into two.
@@ -225,18 +274,19 @@ The first part considers the \emph{while} loop on lines TODO - TODO, and the sec
 \textit{while loop}. Every iteration will add at most one pair $(x_s, y_t)$ to one of the buffers, $F_i$. We can only safely exit the loop if $h(x_s, y_t) < p_{max}$, but a candidate pair will not be added unless $h(x_s, y_t) < p_s$, effectively wasting a number of iterations, proportional to $p_{max}-p_i$. Thus the expected number of iterations are $O(p_{max}|A_i||C_i|)$.
 
 Remaining work\\
-The intersection on line TODO, can be done in $O(|C_i|)$ time, using a hashtable.
+The intersection on line 5, can be done in $O(|C_i|)$ time, using a hashtable.
 Updating $P_{max}$ on line TODO can be done in $log(|W|)$ time, using a Heap.
-      %it is important to set a tight initial p_max
-    %worst-case time-complexity is the same as pagh
+%it is important to set a tight initial p_max
+The overall time complexity is dominated by the execution of the inner loop, $O(n + \sum_i p_{max}|W||C_i|)$
+%worst-case time-complexity is the same as pagh
 
 \paragraph{Space Usage}
-The algorithm uses $O(W*k)$ space, since it has to maintain $W$ individual sketches, each of size $k$. It is worth noting, that the space usage is independent of the input size $n$.
-  %quality of approximation
+The algorithm uses $O(|W|k)$ space, since it has to maintain $W$ individual sketches, each of size $k$. It is worth noting, that the space usage is independent of the input size $n$. This is only a factor $|W|$ more than TODO PAGH REF, which is to be expected.
   %io
     %locality of reference?
 %experiments MABG
   %plots
+  %quality of approximation
   %comparing results with part 1
 %related works 
   %Bar-Yossef og Pagh
@@ -244,9 +294,10 @@ The algorithm uses $O(W*k)$ space, since it has to maintain $W$ individual sketc
 \subsubsection{Suggested Improvements}
 If $|W|<<n$ and the matrix is sparse, $|A_{\pi}|=1$ will occur often, Corresponding to iterating over a movie starring exactly one of the actors on the watchlist. In this case, the inner loop is poorly optimized. Firstly $p_i$ could be used, instead of $p_{max}$, and secondly it could be exploited that the values of $h(x_s, y_t)$ becomes smaller mod 1, when $t$ increases. Using a trick analogous to (TODO sbar while loop) could lower the bound on the inner loop from $O(p_{max}|A_i||C_i|)$ to $O(p|C_i|)$.
 
-  %do something about combine
+%do something about combine
 
-%conclusion
+\subsubsection{Conclusion}
+We have presented an algorithm for approximating the size of boolean matrix products per row. The algorithm runs in linear time, if $p_{max}$ is chosen correctly. TODO delete this or talk about choosing $p_{max}$!.
 
 
 %code in appendix
