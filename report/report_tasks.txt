@@ -1,31 +1,9 @@
-RDAM	beskriv problem
+skriv tekst efter experiment plots
+	valg af k
+	sammenhæng mellem k og sigma
+	eksperimentel validering af sammenhængen
 
-RDAM	skriv afsnit om sequential algoritme
+estimaterne går i fløjten hvis k er for stor
+sigma blir stor, hvis k er for lille
 
-MLFA	skriv afsnit om map-reduce
-	projections
-		for at få 2. runde
-	hvad gør 1. runde
-	hvad gør 2. runde
-	hvor mange par?
-	kan det gøres med færre?
-		ja - HVIS vi er ligeglade med duplicates
-
-MABG validering
-	samme output, efter sortering
-	vis top 20, og sandsynliggør dem
-
-MABG	benchmark
-
-appendix
-	kildekode
-		map-reduce
-		sequential
-
-Bonus
-	Hvad sker der hvis der findes en skuespiller der har spillet i ALLE film overhovedet nogensinde?
-
-Del 2 idéer
-	Brug streaming (Misra-Gries / Count-min) til at finde antal actor-pairs der spiller sammen mindst k gange. Rasmus finder materiale.
-
-	Brug Brent's theorem til at se på hvordan running time skalerer med antal map-red maskiner
+bibtex
