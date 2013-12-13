@@ -225,7 +225,7 @@ Additionally, matrix multiplication can be expressed as the \emph{join-distinct}
 \subsubsection{Our Algorithm}
 \label{subsub:alg}
 To solve our problem we propose a variant of the algorithm shown by Amossen et al. in \cite{paper:amossen}. Instead of approximating the total number of distinct values $\pi_{ac}(R_1 \Join R_2)$ for $R_1(a,b)$, $R_2(b,c)$, we are interested in estimating the number of distinct values $\pi_{ac}(R_1 \Join R_2)$ for each distinct value of $a$ for $a \subseteq c$.\\ % C subset af a
-In regards to the popular problem our algorithm intuitively performs the following steps: Iterate through all the movies. For each movie we create pairs using the same approach as in \cite{paper:amossen} to reduce our work from polynomial time to linear time. Then afterwards we use the approximation technique brought forth by Bar-Yossef et al. in \cite{paper:Bar-Yossef}, to compute our estimates.
+In regards to the popular problem our algorithm intuitively performs the following steps: Iterate through all the movies. For each movie we create pairs using the same approach as in \cite{paper:amossen} to reduce our work from polynomial time to linear time. Then afterwards we use the approximation technique brought forth by Bar-Yossef et al. in \cite{paper:bar-yos}, to compute our estimates.
 
 \paragraph{Introduction}
 The algorithm uses the following functions and variables:
@@ -333,16 +333,39 @@ The algorithm uses $O(|W|k)$ space, since it has to maintain $W$ individual sket
     %locality of reference?
 
 \subsubsection{Experiments}
-\begin{figure}[h!]
+\begin{figure}[H]
 \centering \includegraphics[width=1\textwidth]{plot256.png}
 \caption{k=256}
 \label{fig:exp256}
 \end{figure}
-\begin{figure}[h!]
+\begin{figure}[H]
 \centering \includegraphics[width=1\textwidth]{plot1024.png}
 \caption{k=1024}
 \label{fig:exp1024}
 \end{figure}
+
+\begin{table}[H]
+    \begin{center}
+    \begin{tabular}{l|l|l}
+    $k$    & $\epsilon$      & Observed $\epsilon$ \\ \hline
+    256  & 0.1875 & 0.054      \\ \hline
+    1024 & 0.0936 & 0.039      \\
+    \end{tabular}
+    \end{center}
+\caption{Observed $\epsilon$ values, and their theoretical $\epsilon$ values}\label{tab:epsilon}
+\end{table}
+
+%min_256 = 0.946 = 0,054
+%max_256 = 1.043 = 0.043
+
+%min_1024 = 0.9816 = 0.0184
+%max_1024 = 1.0391 = 0.0391
+
+%expected_256  = 0.1875
+%expected_1024 = 0.09375
+
+
+%
 %explanation of experiments
 %quality of approximation
   %valg af k
