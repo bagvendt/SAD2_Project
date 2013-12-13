@@ -80,7 +80,7 @@ To validate and compare the Map-Reduce implementation, we will implement a simpl
 \paragraph{} 
 To allow for comparison between the sequential and the Map-Reduce algorithms, we have made the sequential algorithm accept the same input.
 %TODO skriv noget om problem size, antal actors, antal movies, textfil størrelse
-\subsection{Naïve Sequential Algorithm}
+\section{Naïve Sequential Algorithm}
 \label{sub:sequential}
 %TODO reference for inverted index
 In the sequential algorithm we build an inverted index, that maps movies to the actors that star in them. This allows us to check which actors appear in which film in constant time. Building the index takes \BigO{a*m} time, where \emph{a} is the number of actors and \emph{m} is the number of movies\\
@@ -89,7 +89,7 @@ When the inverted index is built, we iterate over all actors in the dataset, and
 
 This gives our sequential algorithm a worst-case running time of \BigO{a^2*m}. When running the algorithm on the dataset, the actual running time is much better than the theoretical worst-case. If we envision a matrix with actors and movies, where each entry is 1 if the actor appeared in the movie, or empty otherwise, we can see that the matrix is pretty sparse with the given IMDB dataset. As a result the actual running time of our algorithm will be much lower.
 
-\subsection{Map-Reduce Algorithm}
+\section{Map-Reduce Algorithm}
 \label{sub:map-reduce}
 \begin{figure}
 \centering \includegraphics[scale=0.2]{map-reduce-figure.png}
@@ -101,7 +101,7 @@ This gives our sequential algorithm a worst-case running time of \BigO{a^2*m}. W
 
 Solving the \emph{Popular} problem using Map-Reduce with the specified input format, requires two rounds. The first round will pivot the input into a more suitable structure, while the second round will answer the actual question, that is count the number of unique pairings of actors.
 
-\subsubsection{Round One}
+\subsection{Round One}
 Goal: Transform input pairs (Actor, List<Movie>) into output pairs (Movie, List<Actor>).\\
 
 The mappers break down the (Actor, List<Movie>) pairs into a series of (Movie, Actor) pairs, one for each Movie in the input List<Movie>, essentially emitting the information: "this actor played in this movie".\\
@@ -110,7 +110,7 @@ The shuffle step (part of the Hadoop framework), directs each pair emitted by a 
 
 The reducers each receive a list of (Movie, Actor) pairs, and builds from those a single pair (Movie, List<Actor>) by simply appending each actor to a list. The output of round one is thus, a pivot of the input data changing the shape from (Actor, List<Movie>) to (Movie, List<Actor>), essentially saying "this movie contained exactly these actors".
 
-\subsubsection{Round Two}
+\subsection{Round Two}
 \label{sub}
 Goal: Transform input pairs (Movie, List<Actor>) into output pairs (Actor, Count), where count is the number of unique co-actors this actor has starred with in a movie.\\
 
@@ -128,7 +128,7 @@ This produces a number of pairs, quadratic in the number of actors in the movie,
 
 The reducers each receive a list of (Actor\textsubscript{key}, Actor\textsubscript{value}) pairs, and using a Java HashSet\footnote{The 'Set' interface guarantees that no two equal objects can be contained in the set, at the same time.}, they filter out any duplicate pairs, and emit the final (Actor, count) pairs, one for each actor. These pairs give the number of unique co-actors, a given actor has had during his career.
 
-\subsubsection{Analysis}
+\subsection{Analysis}
 To gauge the efficiency of our implementation, we look at three important performance measures from a Map-Reduce point of view. The number of rounds in the computation, the amount of work done in each mapper/reducer (in the worst case), and the number of pairs emitted.
 
 \paragraph{Number of rounds}
@@ -217,14 +217,14 @@ Our experiment does not contain enough data to make any sweeping conclusions, bu
 The experiment also shows that the sequential algorithm yields the fastest running time, we have been able to achieve. 
 It is our strong belief that if the dataset was larger we would see the distributed setup execute significantly faster than the sequential.
 
-\subsection{Approximating the "Popular" problem}
-Computing the exact solution, using our Map-Reduce approach, may not scale well with the size of the input, due to the number of pairs emitted. In the following, we suggest an algorithm for approximating the solution, building on previous results by TODO REF PAGH.
+\section{Approximating the "Popular" problem}
+Computing the exact solution, using our Map-Reduce approach, may not scale well with the size of the input, due to the number of pairs emitted. In the following, we suggest an algorithm for approximating the solution, building on previous results by \cite{paper:amossen}.
 
-\subsubsection{Equivalence of problems}
+\subsection{Equivalence of problems}
 The Popular problem can be expressed as a boolean matrix multiplication. Consider a matrix A of size $|actors|*|movies|$, where the value $1$ at position $(x, y)$ means that actor $x$ starred in movie $y$. $R = A * A^T$ will then have the dimensions $|actors|*|actors|$, and a $1$ at position $(x, y)$ indicates that actor $x$ and $y$ starred in at least one movie together. Summing the number of non-zero entries in $R_{i,j}$ for a given $i$, gives the number of unique actors that actor $i$ starred with at least once, which is exactly the value we want to compute.\\
 Additionally, matrix multiplication can be expressed as the \emph{join-distinct} operation from relational algebra as follows: Consider the boolean matrix multiplication: $R = A \cdot C$. Let the relation $R_1$ be the pairs corresponding to the non-zero values in A, and the $R_2$ be the pairs corresponding to non-zero values in C. Now each unique pair in $R_1 \Join R_2$ will correspond to a non-zero value in R.
 
-\subsubsection{Related Work}
+\subsection{Related Work}
 Our algorithm builds on the work by Bar-Yossef \cite{paper:bar-yos}, which presents a technique for estimating the number of distinct items in a stream, using $O(1)$ space. If every item in the stream is hashed, and the smallest hashvalue, p, is stored. Then the number of distinct items in the stream can be approximated by $\bar{z}=1/p$. The variance of this can be reduced by storing the k smallest hashvalues, and use $\bar{z}=k/p$ as approximation.\\
 
 Our work proposes a variant to the algorithm presented by Amossen et al, in \cite{paper:amossen}. They use the technique from \cite{paper:bar-yos}, along with a clever sorting trick, to estimate the size boolean matrix products in expected linear time.
@@ -232,7 +232,7 @@ Our work proposes a variant to the algorithm presented by Amossen et al, in \cit
 %outline:
   %our twist / what we change in our variant
   %preparation (introduction of variables)
-\subsubsection{Our Algorithm}
+\subsection{Our Algorithm}
 \label{subsub:alg}
 To solve our problem we propose a variant of the algorithm shown by Amossen et al. in \cite{paper:Amossen}. Instead of approximating the total number of distinct values $\pi_{ac}(R_1 \Join R_2)$ for $R_1(a,b)$, $R_2(b,c)$, we are interested in estimating the number of distinct values $\pi_{ac}(R_1 \Join R_2)$ for each distinct value of $a$ for $a \subseteq c$.\\ % C subset af a
 In regards to the popular problem our algorithm intuitively performs the following steps: Iterate through all the movies. For each movie we create pairs using the same approach as in \cite{paper:Amossen} to reduce our work from polynomial time to linear time. Then afterwards we use the first approximation technique brought forth by Bar-Yossef et al. in \cite{paper:Bar-Yossef}, to compute our estimates.
@@ -274,7 +274,7 @@ Intuitively we create a table for each value $i \in B$. These tables have the di
 
 %description
   %our algorithm (this is the idea, we made it as a twist on pagh) - RDAM
-\subsubsection{Pseudocode}
+\subsection{Pseudocode}
 \label{sub:pseudocode}
 % Fix så det bliver til procedure
 \begin{algorithm}[H]
@@ -325,7 +325,7 @@ Intuitively we create a table for each value $i \in B$. These tables have the di
 
 \caption{Pseudocode for actor pair estimation\label{alg:size}}
 \end{algorithm}
-\subsubsection{Analysis}
+\subsection{Analysis}
 \paragraph {Running Time}
 Following \cite{paper:amossen}, we split the analysis of the running time into two.
 The first part considers the \emph{while} loop on lines 15 to 24, and the second part considers the remaining work done.\\
@@ -345,7 +345,7 @@ The algorithm uses $O(k\cdot|W|)$ space, since it has to maintain $W$ individual
   %io
     %locality of reference?
 
-\subsubsection{Experiments}
+\subsection{Experiments}
 \begin{figure}[H]
 \centering \includegraphics[width=1\textwidth]{plot256.png}
 \caption{k=256}
@@ -359,12 +359,12 @@ The algorithm uses $O(k\cdot|W|)$ space, since it has to maintain $W$ individual
 \begin{table}[H]
     \begin{center}
     \begin{tabular}{l|l|l}
-    $k$    & $\epsilon$      & Observed $\epsilon$ \\ \hline
+    $k$    & Expected $\epsilon$      & Observed $\epsilon$ \\ \hline
     256  & 0.1875 & 0.054      \\ \hline
     1024 & 0.0936 & 0.039      \\
     \end{tabular}
     \end{center}
-\caption{Observed $\epsilon$ values, and their theoretical $\epsilon$ values}\label{tab:epsilon}
+\caption{Observed and expected $\epsilon$ values, as a function of $k$.}\label{tab:epsilon}
 \end{table}
 
 %min_256 = 0.946 = 0,054
@@ -388,25 +388,26 @@ The algorithm uses $O(k\cdot|W|)$ space, since it has to maintain $W$ individual
   %sigma blir stor, hvis k er for lille
   %comparing results with part 1
 
-\subsubsection{Suggested Improvements}
+\subsection{Suggested Improvements}
 If $|W|<<n$ and the matrix is sparse, $|A_{\pi}|=1$ will occur often, Corresponding to iterating over a movie starring exactly one of the actors on the watchlist. In this case, the inner loop is poorly optimized. Firstly $p_i$ could be used, instead of $p_{max}$, and secondly it could be exploited that the values of $h(x_s, y_t)$ becomes smaller mod 1, when $t$ increases. Using a trick analogous to lines 11 to 13 in the pseudocode, could lower the bound on the inner loop from $O(p_{max}|A_i||C_i|)$ to $O(p|C_i|)$.
 
 %do something about combine
 
 %Multicore snak, men pas på.
 
-\subsubsection{Conclusion}
+\subsection{Conclusion}
 We have presented an algorithm for approximating the size of boolean matrix products per row. The algorithm runs in linear time, if $p_{max}$ is chosen correctly. TODO delete this or talk about choosing $p_{max}$!.
 
 \begin{thebibliography}{}
+
+\bibitem{paper:amossen}
+Rasmus Resen Amossen, Andrea Campagna, Rasmus Pagh
+Better Size Estimation for Sparse Matrix Products. Algorithmica, March 2013.
 
 \bibitem{paper:bar-yos}
 Z. Bar-Yossef, T. S. Jayram, R. Kumar, D. Sivakumar, and L. Trevisan.
 Counting distinct elements in a data stream. Springer-Verlag, 2002. (RANDOM '02)
 
-\bibitem{paper:amossen}
-Rasmus Resen Amossen, Andrea Campagna, Rasmus Pagh
-Better Size Estimation for Sparse Matrix Products. Algorithmica, March 2013.
       %Sådan her ref'er man en URL
       %\bibitem{lit:json}
       %\url{http://tools.ietf.org/html/rfc4627}
