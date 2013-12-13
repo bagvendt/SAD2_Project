@@ -242,7 +242,7 @@ The algorithm uses the following functions and variables:
   \item $A_i$: $\pi_{a}(\sigma_{b=i}(R_1))$
   \item $A_{\pi}$
   \item $C_i$: $\pi_{c}(\sigma_{b=i}(R_2))$
-  \item $W$: Chosen subset of $\pi_{a}(R_1)$
+  \item $W$: Chosen subset of $\pi_{a}(R_1)$ (the watchlist)
   \item $F_s$: TODO
   \item $S_s$: TODO
   \item $p_s$: TODO
@@ -349,15 +349,20 @@ The algorithm uses $O(k\cdot|W|)$ space, since it has to maintain $W$ individual
   %io
     %locality of reference?
 
+\paragraph{Error and Variance}
+As we use the same approximation technique as the one presented in \cite{paper:bar-yos}. the same analysis applies to our algorithm. This means that for each exact solution, $z_i$, and the corresponding appoximation, $\tilde{z}_i$ we know that $\tilde{z}_i$ = $z_i\pm\epsilon$, where $\epsilon = \sqrt{9k}$. We can state this is the case with probability 2/3.\\
+
+If we wish to increase the confidence in the approximation, the error-probability $(2/3)$ can be made arbitrarily small, by rerunning the algorith a number of times, and choosing the median.
+
 \subsection{Experiments}
-We have set up an experiment in which we run our modified size estimation algorithm 100 times on the "Popular" problem, 
-each time generating two pairwise independent $h_1$ and $h_2$ functions. 
+We have set up an experiment in which we run our algorithm 100 times on the data from the "Popular" problem.
+On each repetition, we generate new hash functions $h_1$ and $h_2$.
 Futhermore we have selected $W$ to be the top 10 actors introduced in Section \ref{sub:verification}. 
 
-In every iteration we have set the initial value of $p$ to 1, to make sure that we fill the sketches as much as possible.
-These 100 iterations has been run with k=256 and k=1024. 
+We start each repetition with $p$=1. This is done to ensure that we fill the sketches.
+We have run the experiment twice, 100, for $k=256$ and for $k=1024$, to see the effect of choice of $k$ on the error ratio.
 
-In every iteration and for each actor we calculate a ratio, "observed estimate" / "actual value". By sorting these ratios we can draw the ratio/"cumulative distribution function" graph, for both $k$ values. These graphs are presented in Figure \ref{fig:k256} and \ref{fig:k1024}
+In every iteration and for each actor we calculate a ratio, "observed estimate" / "actual value". By sorting these values, we can draw the ratio / cumulative distribution function graph, for each choice of $k$. These graphs are presented in Figures \ref{fig:k256} and \ref{fig:k1024}.
 
 \begin{figure}[H]
 \centering \includegraphics[width=0.9\textwidth]{plot256.png}
@@ -370,7 +375,8 @@ In every iteration and for each actor we calculate a ratio, "observed estimate" 
 \label{fig:exp1024}
 \end{figure}
 
-We have compared the observed $\epsilon$ for 2/3 of the results with the theoretical $\epsilon$ for both $k$ values in Table \ref{tab:epsilon}
+We have compared the observed and expected $\epsilon$ for both $k$ values in Table \ref{tab:epsilon}. 
+A choice of $k=1024$ corresponds to $\epsilon=\sqrt{9/1024}=0.0936$. The $\epsilon - k$ relationship makes intuitive sense. When you increase $k$, $\epsilon$ decreases, and you get a better approximation. However, it is also important to note, that if $k$ is chosen to be too large, the sketch $S$ will never be filled, and no approximation can be given.
 
 \begin{table}[H]
     \begin{center}
@@ -392,27 +398,13 @@ We have compared the observed $\epsilon$ for 2/3 of the results with the theoret
 %expected_256  = 0.1875
 %expected_1024 = 0.09375
 
-
-%
-
-%explanation of experiments
-%quality of approximation
-  %valg af k
-  %sammenhæng mellem k og sigma
-  %eksperimentel validering af sammenhængen
-  %estimaterne går i fløjten hvis k er for stor
-  %sigma blir stor, hvis k er for lille
-  %comparing results with part 1
-
 \subsection{Suggested Improvements}
 If $|W|\ll n$ and the matrix is sparse, $|A_{\pi}|=1$ will occur often, Corresponding to iterating over a movie starring exactly one of the actors on the watchlist. In this case, the inner loop is poorly optimized. Firstly $p_i$ could be used, instead of $p_{max}$, and secondly it could be exploited that the values of $h(x_s, y_t)$ becomes smaller mod 1, when $t$ increases. Using a trick analogous to lines 11 to 13 in the pseudocode, could lower the bound on the inner loop from $O(p_{max}|A_i||C_i|)$ to $O(p|C_i|)$.
-
-%do something about combine
 
 %Multicore snak, men pas på.
 
 \subsection{Conclusion}
-We have presented an algorithm for approximating the size of boolean matrix products per row. The algorithm runs in linear time, if $p_{max}$ is chosen correctly. TODO delete this or talk about choosing $p_{max}$!.
+We have presented an algorithm for approximating the size of boolean matrix products per row. The algorithm runs in linear time, if $p_{max}$ is chosen correctly. TODO delete this or talk about choosing $p_{max}$!. The approximations lie within a factor $\epsilon$ of the actual value, with a probability of $2/3$.
 
 \newpage
 
