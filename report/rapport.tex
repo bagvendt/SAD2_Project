@@ -401,7 +401,8 @@ A choice of $k=1024$ corresponds to $\epsilon=\sqrt{9/1024}=0.0936$. The $\epsil
 \subsection{Suggested Improvements}
 If $|W|\ll n$ and the matrix is sparse, $|A_{\pi}|=1$ will occur often, Corresponding to iterating over a movie starring exactly one of the actors on the watchlist. In this case, the inner loop is poorly optimized. Firstly $p_i$ could be used, instead of $p_{max}$, and secondly it could be exploited that the values of $h(x_s, y_t)$ becomes smaller mod 1, when $t$ increases. Using a trick analogous to lines 11 to 13 in the pseudocode, could lower the bound on the inner loop from $O(p_{max}|A_i||C_i|)$ to $O(p|C_i|)$.
 
-%Multicore snak, men pas på.
+We observe that the size estimation algorithm could be parallelized by spawning a thread for each movie  $i \in B$. Each time some S and B is to be updated, either by adding to a pair to F or by calling the procedure COMBINE on them, a mutex lock could be introduced to enforce atomicity. 
+
 
 \subsection{Conclusion}
 We have presented an algorithm for approximating the size of boolean matrix products per row. The algorithm runs in linear time, if $p_{max}$ is chosen correctly. TODO delete this or talk about choosing $p_{max}$!. The approximations lie within a factor $\epsilon$ of the actual value, with a probability of $2/3$.
