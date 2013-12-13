@@ -135,8 +135,13 @@ The amount of work done in each mapper/reducer is close to being balanced. Obvio
 The number of pairs generated in round two, is proportional to the number of unique pairs of actors that starred in a movie together. For every movie that has A actors starring in it, $2*A(A-1)$ pairs will be emitted. %TODO does this need a further explanation?
 
 This is a large amount of pairs, but we cannot see how this number can be reduced, without relaxing the constraint that a pair of actors should be counted only once. If that constraint is lifted, the round two mapper can simply emit (Actor, Movies.Actors.count - 1), meaning that "this actor starred with n other actors in some movie". The reducers could then simply sum all those counts, to get the total.\footnote{This optimization captures the same idea as the standard 'Wordcount' optimization example, where the mapper keeps a local dictionary of words and counts, instead of mindlessly emitting (word, 1) duplicate pairs multiple times.}\\
+<<<<<<< HEAD
 
 The relaxed version of round two produces drastically fewer pairs (one pair for each actor, for each movie they starred in), compared to the strict version (two pairs for each unique pair of actors per movie). By making the mapper slightly smarter, the shuffler and reducers do much less work. But it also solves a slightly different problem, than the one we are interested in. Overall the performance on the given dataset is acceptable, but for significantly larger datasets, the number of pairs might cause a noticeable slowdown.
+=======
+% TODO: Should we analyse the other version as an approximation algorithm for the initial problem.
+The relaxed version of round two produces drastically fewer pairs (one pair for each actor, for each movie they starred in), compared to the strict version (two pairs for each unique pair of actors per movie). By making the mapper slightly smarter, the shuffler and reducers do much less work. But it also solves a slightly different problem, than the one we are interested in. Overall the performance on the given dataset is acceptable, but for significantly larger datasets, the number of pairs might cause a noticeable slowdown. 
+>>>>>>> 7e0223e64e593448404d59bd50da4e5d5b8b56b9
 
 \subsection{Verification of results}
 We have designed the format of the output of our sequential algorithm, described in Section \ref{sub:sequential}, in such a way that it conforms to the format of the Map-Reduce algorithm described in Section \ref{sub:map-reduce}. 
@@ -186,7 +191,7 @@ In the distributed setup we used the online web service Amazon Elastic Mapreduce
 The results of the experiment is seen in Table \ref{tab:benchmark}
 
 \begin{table}[h!]
-\label{tab:benchmark}
+
 \begin{center}
     \begin{tabular}{|l|l|l|l|l|}
     \hline
@@ -199,7 +204,7 @@ The results of the experiment is seen in Table \ref{tab:benchmark}
     Map-Reduce & Distributed         & 10        & m1.xlarge                         & 120                 \\ \hline
     \end{tabular}
     \end{center}
-    \caption{The results of our experiment}
+    \caption{The results of our experiment}\label{tab:benchmark}
 \end{table}
 Our experiment does not contain enough data to make any sweeping conclusions, but it does illustrate a tendency in the distributed setup that more powerful instances yield a faster running time and more instances yield a faster running time. 
 
@@ -223,8 +228,9 @@ Additionally, matrix multiplication can be expressed as the \emph{join-distinct}
   %preparation (introduction of variables)
   %pseudocode, done
 \subsubsection{Our Algorithm}
+\label{subsub:alg}
 To solve our problem we propose a variant of the algorithm shown by Amossen et al. in \cite{paper:amossen}. Instead of approximating the total number of distinct values $\pi_{ac}(R_1 \Join R_2)$ for $R_1(a,b)$, $R_2(b,c)$, we are interested in estimating the number of distinct values $\pi_{ac}(R_1 \Join R_2)$ for each distinct value of $a$ for $a \subseteq c$.\\ % C subset af a
-In regards to the popular problem our algorithm intuitively performs the following steps: Iterate through all the movies. For each movie we create pairs using the same approach as in \cite{paper:amossen} to reduce our work from polynomial time to linear time. Then afterwards we use the approximation technique brought forth by Bar-Yossef et al. in \cite{paper:Bar-Yossef}, to compute our estimates.
+In regards to the popular problem our algorithm intuitively performs the following steps: Iterate through all the movies. For each movie we create pairs using the same approach as in \cite{paper:amossen} to reduce our work from polynomial time to linear time. Then afterwards we use the approximation technique brought forth by Bar-Yossef et al. in \cite{paper:bar-yos}, to compute our estimates.
 
 \paragraph{Introduction}
 The algorithm uses the following functions and variables:
@@ -307,8 +313,8 @@ W- watchlist - hashmap
       }
       \Return $R$
       }
-   
-\caption{Pseudocode for actor pair estimation\label{alg:MAVC}}
+
+\caption{Pseudocode for actor pair estimation\label{alg:size}}
 \end{algorithm}
 \subsubsection{Analysis}
 \paragraph {Running Time}
@@ -331,12 +337,12 @@ The algorithm uses $O(|W|k)$ space, since it has to maintain $W$ individual sket
     %locality of reference?
 
 \subsubsection{Experiments}
-\begin{figure}[h!]
+\begin{figure}[ht!]
 \centering \includegraphics[width=1\textwidth]{plot256.png}
 \caption{k=256}
 \label{fig:exp256}
 \end{figure}
-\begin{figure}[h!]
+\begin{figure}[ht!]
 \centering \includegraphics[width=1\textwidth]{plot1024.png}
 \caption{k=1024}
 \label{fig:exp1024}
@@ -376,9 +382,11 @@ Counting distinct elements in a data stream. Springer-Verlag, 2002. (RANDOM '02)
 \end{thebibliography}
 
 %code in appendix
-\section{Appendix}
+\section*{Appendix}
 \textbf{Popular.java - Map-Reduce}
 \lstinputlisting[language=Java]{../map_reduce/popular/src/Popular.java}
+\textbf{size\_estimator.py - Our implemtation of the method introduced in Section \ref{subsub:alg}}
+\lstinputlisting[language=Python]{../tools/size_estimator.py}
 \textbf{Popular.py - Project sql data into text file}
 \lstinputlisting[language=Python]{../projections/popular.py}
 \textbf{sequential\_popular.py - Sequential implementation of Popular}
