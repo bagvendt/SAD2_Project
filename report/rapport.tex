@@ -344,18 +344,23 @@ The algorithm uses $O(k\cdot|W|)$ space, since it has to maintain $W$ individual
     %locality of reference?
 
 \subsubsection{Experiments}
-We have set up an experiment in which we run the size estimation algorithm 100 times, 
+We have set up an experiment in which we run our modified size estimation algorithm 100 times on the "Popular" problem, 
 each time generating two pairwise independent $h_1$ and $h_2$ functions. 
-Futhermore we have selected $W$ to be the top 10 actors introduced in Section \ref{sub:verification} 
+Futhermore we have selected $W$ to be the top 10 actors introduced in Section \ref{sub:verification}. 
+
+In every iteration we have set the initial value of $p$ to 1, to make sure that we fill the sketches as much as possible.
+These 100 iterations has been run with k=256 and k=1024. 
+
+In every iteration and for each actor we calculate a ratio, "observed estimate" / "actual value". By sorting these ratios we can draw the ratio/"cumulative distribution function" graph, for both $k$ values. These graphs are presented in Figure \ref{fig:k256} and \ref{fig:k1024}
 
 \begin{figure}[H]
 \centering \includegraphics[width=0.9\textwidth]{plot256.png}
-\caption{k=256}
+\caption{k=256}\label{fig:k256}
 \label{fig:exp256}
 \end{figure}
 \begin{figure}[H]
 \centering \includegraphics[width=0.9\textwidth]{plot1024.png}
-\caption{k=1024}
+\caption{k=1024}\label{fig:k1024}
 \label{fig:exp1024}
 \end{figure}
 \begin{table}[H]
