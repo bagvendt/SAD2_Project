@@ -219,17 +219,16 @@ The Popular problem can be expressed as a boolean matrix multiplication. Conside
 Additionally, matrix multiplication can be expressed as the \emph{join-distinct} operation from relational algebra as follows: Consider the boolean matrix multiplication: $R = A \cdot C$. Let the relation $R_1$ be the pairs corresponding to the non-zero values in A, and the $R_2$ be the pairs corresponding to non-zero values in C. Now each unique pair in $R_1 \Join R_2$ will correspond to a non-zero value in R.
 
 \subsubsection{Related Work}
-  %Bar-Yossef og Pagh
-    %introduce Amossen algorithm
-    %uses bar-yossef idea and clever trick where sorting the hashvalues can allow you to skip checking some of them.
+Our algorithm builds on the work by Bar-Yossef \cite{paper:bar-yos}, which presents a technique for estimating the number of distinct items in a stream, using $O(1)$ space. If every item in the stream is hashed, and the smallest hashvalue, p, is stored. Then the number of distinct items in the stream can be approximated by $\bar{z}=1/p$. The variance of this can be reduced by storing the k smallest hashvalues, and use $\bar{z}=k/p$ as approximation.\\
+
+Our work proposes a variant to the algorithm presented by Amossen et al, in \cite{paper:amossen}. They use the technique from \cite{paper:bar-yos}, along with a clever sorting trick, to estimate the size boolean matrix products in expected linear time.
 
 %outline:
   %our twist / what we change in our variant
   %preparation (introduction of variables)
-  %pseudocode, done
 \subsubsection{Our Algorithm}
 \label{subsub:alg}
-To solve our problem we propose a variant of the algorithm shown by Amossen et al. in \cite{paper:amossen}. Instead of approximating the total number of distinct values $\pi_{ac}(R_1 \Join R_2)$ for $R_1(a,b)$, $R_2(b,c)$, we are interested in estimating the number of distinct values $\pi_{ac}(R_1 \Join R_2)$ for each distinct value of $a$ for $a \subseteq c$.\\ % C subset af a
+To solve our problem we propose a variant of the algorithm shown in \cite{paper:amossen}. Instead of approximating the total number of distinct values $\pi_{ac}(R_1 \Join R_2)$ for $R_1(a,b)$, $R_2(b,c)$, we are interested in estimating the number of distinct values $\pi_{ac}(R_1 \Join R_2)$ for each distinct value of $a$ for $a \subseteq c$.\\ % C subset af a
 In regards to the popular problem our algorithm intuitively performs the following steps: Iterate through all the movies. For each movie we create pairs using the same approach as in \cite{paper:amossen} to reduce our work from polynomial time to linear time. Then afterwards we use the approximation technique brought forth by Bar-Yossef et al. in \cite{paper:bar-yos}, to compute our estimates.
 
 \paragraph{Introduction}
@@ -319,20 +318,20 @@ W- watchlist - hashmap
 \subsubsection{Analysis}
 \paragraph {Running Time}
 Following \cite{paper:amossen}, we split the analysis of the running time into two.
-The first part considers the \emph{while} loop on lines 15 to 24, and the second part considers the remaining work done.
+The first part considers the \emph{while} loop on lines 15 to 24, and the second part considers the remaining work done.\\
 
-\textit{while loop}. Every iteration will add at most one pair $(x_s, y_t)$ to one of the buffers, $F_i$. We can only safely exit the loop if $h(x_s, y_t) < p_{max}$, but a candidate pair will not be added unless $h(x_s, y_t) < p_s$, effectively wasting a number of iterations, proportional to $p_{max}-p_i$. Thus the expected number of iterations are $O(p_{max}|A_i||C_i|)$.
+\textit{while loop}. Every iteration will add at most one pair $(x_s, y_t)$ to one of the buffers, $F_i$. We can only safely exit the loop if $h(x_s, y_t) < p_{max}$, but a candidate pair will not be added unless $h(x_s, y_t) < p_s$, effectively wasting a number of iterations, proportional to $p_{max}-p_i$. Thus the expected number of iterations are $O(p_{max}|A_i||C_i|)$.\\
 
-Remaining work\\
+\textit{Remaining work}.
 The intersection on line 5, can be done in $O(|W|+|C_i|)$ time, using a hashtable. Since $|W|<|C_i|$, this is equal to $O(|C_i|)$.
 Updating $P_{max}$ on line 20 can be done in $log(|W|)$ time, using a Heap.
 
 The overall time complexity is dominated by the execution of the inner loop, $O(n + \sum_i p_{max}|W||C_i|)$.\\
 
-The worst-case running time is the same as \cite{paper:amossen}, but in actual use, we predict that our implementation will be significantly slower. This is due to the wasted work done in the inner loop, whenever $P_i < P_{max}$.
+The worst-case running time is the same as \cite{paper:amossen} (assuming $p_{max} = 1$), but in actual use, we predict that our implementation will be significantly slower. This is due to the wasted work done in the inner loop, whenever $P_i < P_{max}$, and the fact that $p_{max}$ will decrease at a lower rate than $p$ in \cite{paper:amossen}.
 
 \paragraph{Space Usage}
-The algorithm uses $O(|W|k)$ space, since it has to maintain $W$ individual sketches, each of size $O(k)$. It is worth noting, that the space usage is independent of the input size $n$. This is only a factor $|W|$ more than \cite{paper:amossen}, which is to be expected.
+The algorithm uses $O(k\cdot|W|)$ space, since it has to maintain $W$ individual sketches, each of size $O(k)$. It is worth noting, that the space usage is independent of the input size $n$. This is a factor $|W|$ more than \cite{paper:amossen}, which is to be expected.
   %io
     %locality of reference?
 
