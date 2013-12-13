@@ -135,13 +135,12 @@ The amount of work done in each mapper/reducer is close to being balanced. Obvio
 The number of pairs generated in round two, is proportional to the number of unique pairs of actors that starred in a movie together. For every movie that has A actors starring in it, $2*A(A-1)$ pairs will be emitted. %TODO does this need a further explanation?
 
 This is a large amount of pairs, but we cannot see how this number can be reduced, without relaxing the constraint that a pair of actors should be counted only once. If that constraint is lifted, the round two mapper can simply emit (Actor, Movies.Actors.count - 1), meaning that "this actor starred with n other actors in some movie". The reducers could then simply sum all those counts, to get the total.\footnote{This optimization captures the same idea as the standard 'Wordcount' optimization example, where the mapper keeps a local dictionary of words and counts, instead of mindlessly emitting (word, 1) duplicate pairs multiple times.}\\
-<<<<<<< HEAD
 
-The relaxed version of round two produces drastically fewer pairs (one pair for each actor, for each movie they starred in), compared to the strict version (two pairs for each unique pair of actors per movie). By making the mapper slightly smarter, the shuffler and reducers do much less work. But it also solves a slightly different problem, than the one we are interested in. Overall the performance on the given dataset is acceptable, but for significantly larger datasets, the number of pairs might cause a noticeable slowdown.
-=======
 % TODO: Should we analyse the other version as an approximation algorithm for the initial problem.
 The relaxed version of round two produces drastically fewer pairs (one pair for each actor, for each movie they starred in), compared to the strict version (two pairs for each unique pair of actors per movie). By making the mapper slightly smarter, the shuffler and reducers do much less work. But it also solves a slightly different problem, than the one we are interested in. Overall the performance on the given dataset is acceptable, but for significantly larger datasets, the number of pairs might cause a noticeable slowdown. 
->>>>>>> 7e0223e64e593448404d59bd50da4e5d5b8b56b9
+
+
+%Gammel -> The relaxed version of round two produces drastically fewer pairs (one pair for each actor, for each movie they starred in), compared to the strict version (two pairs for each unique pair of actors per movie). By making the mapper slightly smarter, the shuffler and reducers do much less work. But it also solves a slightly different problem, than the one we are interested in. Overall the performance on the given dataset is acceptable, but for significantly larger datasets, the number of pairs might cause a noticeable slowdown.
 
 \subsection{Verification of results}
 We have designed the format of the output of our sequential algorithm, described in Section \ref{sub:sequential}, in such a way that it conforms to the format of the Map-Reduce algorithm described in Section \ref{sub:map-reduce}. 
@@ -336,13 +335,15 @@ The algorithm uses $O(k\cdot|W|)$ space, since it has to maintain $W$ individual
     %locality of reference?
 
 \subsubsection{Experiments}
+We have set up an experiment in which we choose 
+
 \begin{figure}[H]
-\centering \includegraphics[width=1\textwidth]{plot256.png}
+\centering \includegraphics[width=0.9\textwidth]{plot256.png}
 \caption{k=256}
 \label{fig:exp256}
 \end{figure}
 \begin{figure}[H]
-\centering \includegraphics[width=1\textwidth]{plot1024.png}
+\centering \includegraphics[width=0.9\textwidth]{plot1024.png}
 \caption{k=1024}
 \label{fig:exp1024}
 \end{figure}
