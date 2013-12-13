@@ -348,7 +348,7 @@ The worst-case running time is the same as \cite{paper:amossen} (assuming $p_{ma
 The algorithm uses $O(k\cdot|W|)$ space, since it has to maintain $W$ individual sketches, each of size $O(k)$. It is worth noting, that the space usage is independent of the input size $n$. This is a factor $|W|$ more than \cite{paper:amossen}, which is to be expected.
   %io
     %locality of reference?
-
+    
 \subsection{Experiments}
 We have set up an experiment in which we run our algorithm 100 times on the data from the "Popular" problem.
 On each repetition, we generate new hash functions $h_1$ and $h_2$.
@@ -357,7 +357,7 @@ Futhermore we have selected $W$ to be the top 10 actors introduced in Section \r
 We start each repetition with $p$=1. This is done to ensure that we fill the sketches.
 We have run the experiment twice, 100, for $k=256$ and for $k=1024$, to see the effect of choice of $k$ on the error ratio.
 
-In every iteration and for each actor we calculate a ratio, "observed estimate" / "actual value". By sorting these ratios we can draw the ratio/"cumulative distribution function" graph, for each choice of $k$. These graphs are presented in Figure \ref{fig:k256} and \ref{fig:k1024}
+In every iteration and for each actor we calculate a ratio, "observed estimate" / "actual value". By sorting these values, we can draw the ratio / cumulative distribution function graph, for each choice of $k$. These graphs are presented in Figures \ref{fig:k256} and \ref{fig:k1024}.
 
 \begin{figure}[H]
 \centering \includegraphics[width=0.9\textwidth]{plot256.png}
@@ -393,27 +393,13 @@ $k$ is defined as $9/\epsilon^2$, meaning that a choice of $k=1024$ corresponds 
 %expected_256  = 0.1875
 %expected_1024 = 0.09375
 
-
-%
-
-%explanation of experiments
-%quality of approximation
-  %valg af k
-  %sammenhæng mellem k og sigma
-  %eksperimentel validering af sammenhængen
-  %estimaterne går i fløjten hvis k er for stor
-  %sigma blir stor, hvis k er for lille
-  %comparing results with part 1
-
 \subsection{Suggested Improvements}
 If $|W|\ll n$ and the matrix is sparse, $|A_{\pi}|=1$ will occur often, Corresponding to iterating over a movie starring exactly one of the actors on the watchlist. In this case, the inner loop is poorly optimized. Firstly $p_i$ could be used, instead of $p_{max}$, and secondly it could be exploited that the values of $h(x_s, y_t)$ becomes smaller mod 1, when $t$ increases. Using a trick analogous to lines 11 to 13 in the pseudocode, could lower the bound on the inner loop from $O(p_{max}|A_i||C_i|)$ to $O(p|C_i|)$.
-
-%do something about combine
 
 %Multicore snak, men pas på.
 
 \subsection{Conclusion}
-We have presented an algorithm for approximating the size of boolean matrix products per row. The algorithm runs in linear time, if $p_{max}$ is chosen correctly. TODO delete this or talk about choosing $p_{max}$!.
+We have presented an algorithm for approximating the size of boolean matrix products per row. The algorithm runs in linear time, if $p_{max}$ is chosen correctly. TODO delete this or talk about choosing $p_{max}$!. The approximations are with a factor \epsilon with a probability of $2/3$.
 
 \newpage
 
