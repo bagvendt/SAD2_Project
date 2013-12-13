@@ -349,6 +349,9 @@ The algorithm uses $O(k\cdot|W|)$ space, since it has to maintain $W$ individual
   %io
     %locality of reference?
 
+\paragraph{Error and Variance}
+As we use the same approximation technique as the one presented by Bar-Yossef et. al. the same analysis applies to our algorithm. This means that for each correct value, $z_i$, each appoximation, $\tilde{z}_i$ we know that $\tilde{z}_i$ = $z_i\pm\epsilon$, where $\epsilon = \sqrt{9k}$. We can state this is the case with propability 2/3.
+
 \subsection{Experiments}
 We have set up an experiment in which we run our modified size estimation algorithm 100 times on the "Popular" problem, 
 each time generating two pairwise independent $h_1$ and $h_2$ functions. 
