@@ -58,7 +58,7 @@
 
 \bibliographystyle{plain}
 \begin{document}
-\date{1. December 2013}
+\date{16. December 2013}
 \title{Finding Hollywood's most Popular\\Using Map-Reduce and Approximation}
 
 \author{Marcus Gregersen\\
@@ -219,7 +219,7 @@ It is our strong belief that if the dataset was larger we would see the distribu
 Computing the exact solution, using our Map-Reduce approach, may not scale well with the size of the input, due to the number of pairs emitted. In the following, we suggest an algorithm for approximating the solution, building on previous results by \cite{paper:amossen}.
 
 \subsection{Equivalence of problems}
-The Popular problem can be expressed as a boolean matrix multiplication. Consider a matrix A of size $|actors|*|movies|$, where the value $1$ at position $(x, y)$ means that actor $x$ starred in movie $y$. $R = A * A^T$ will then have the dimensions $|actors|*|actors|$, and a $1$ at position $(x, y)$ indicates that actor $x$ and $y$ starred in at least one movie together. Summing the number of non-zero entries in $R_{i,j}$ for a given $i$, gives the number of unique actors that actor $i$ starred with at least once, which is exactly the value we want to compute.\\
+The Popular problem can be expressed as a boolean matrix multiplication. Consider a matrix A of size $|actors| \cdot |movies|$, where the value $1$ at position $(x, y)$ means that actor $x$ starred in movie $y$. $R = A * A^T$ will then have the dimensions $|actors| \cdot |actors|$, and a $1$ at position $(x, y)$ indicates that actor $x$ and $y$ starred in at least one movie together. Summing the number of non-zero entries in $R_{i,j}$ for a given $i$, gives the number of unique actors that actor $i$ starred with at least once, which is exactly the value we want to compute.\\
 Additionally, matrix multiplication can be expressed as the \emph{join-distinct} operation from relational algebra as follows: Consider the boolean matrix multiplication: $R = A \cdot C$. Let the relation $R_1$ be the pairs corresponding to the non-zero values in A, and the $R_2$ be the pairs corresponding to non-zero values in C. Now each unique pair in $R_1 \Join R_2$ will correspond to a non-zero value in R.
 
 \subsubsection{Related Work}
@@ -353,14 +353,14 @@ The algorithm uses $O(k\cdot|W|)$ space, since it has to maintain $W$ individual
 As we use the same approximation technique as the one presented by Bar-Yossef et. al. the same analysis applies to our algorithm. This means that for each correct value, $z_i$, each appoximation, $\tilde{z}_i$ we know that $\tilde{z}_i$ = $z_i\pm\epsilon$, where $\epsilon = \sqrt{9k}$. We can state this is the case with propability 2/3.
 
 \subsection{Experiments}
-We have set up an experiment in which we run our modified size estimation algorithm 100 times on the "Popular" problem, 
-each time generating two pairwise independent $h_1$ and $h_2$ functions. 
+We have set up an experiment in which we run our algorithm 100 times on the data from the "Popular" problem.
+On each repetition, we generate new hash functions $h_1$ and $h_2$.
 Futhermore we have selected $W$ to be the top 10 actors introduced in Section \ref{sub:verification}. 
 
-In every iteration we have set the initial value of $p$ to 1, to make sure that we fill the sketches as much as possible.
-These 100 iterations has been run with k=256 and k=1024. 
+We start each repetition with $p$=1. This is done to ensure that we fill the sketches.
+We have run the experiment twice, 100, for $k=256$ and for $k=1024$, to see the effect of choice of $k$ on the error ratio.
 
-In every iteration and for each actor we calculate a ratio, "observed estimate" / "actual value". By sorting these ratios we can draw the ratio/"cumulative distribution function" graph, for both $k$ values. These graphs are presented in Figure \ref{fig:k256} and \ref{fig:k1024}
+In every iteration and for each actor we calculate a ratio, "observed estimate" / "actual value". By sorting these ratios we can draw the ratio/"cumulative distribution function" graph, for each choice of $k$. These graphs are presented in Figure \ref{fig:k256} and \ref{fig:k1024}
 
 \begin{figure}[H]
 \centering \includegraphics[width=0.9\textwidth]{plot256.png}
@@ -373,7 +373,8 @@ In every iteration and for each actor we calculate a ratio, "observed estimate" 
 \label{fig:exp1024}
 \end{figure}
 
-We have compared the observed $\epsilon$ for 2/3 of the results with the theoretical $\epsilon$ for both $k$ values in Table \ref{tab:epsilon}
+We have compared the observed and expected $\epsilon$ for both $k$ values in Table \ref{tab:epsilon}. 
+$k$ is defined as $9/\epsilon^2$, meaning that a choice of $k=1024$ corresponds to $\epsilon=\sqrt{9/1024}=0.0936$. This makes intuitive sense, when you increase $k$, $\epsilon$ decreases, and you get a better approximation. However, it is also important to note, that if $k$ is chosen to be too large, the sketch $S$ will never be filled, and no approximation can be given.
 
 \begin{table}[H]
     \begin{center}
