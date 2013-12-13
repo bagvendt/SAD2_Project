@@ -215,9 +215,9 @@ The Popular problem can be expressed as a boolean matrix multiplication. Conside
 Additionally, matrix multiplication can be expressed as the \emph{join-distinct} operation from relational algebra as follows: Consider the boolean matrix multiplication: $R = A \cdot C$. Let the relation $R_1$ be the pairs corresponding to the non-zero values in A, and the $R_2$ be the pairs corresponding to non-zero values in C. Now each unique pair in $R_1 \Join R_2$ will correspond to a non-zero value in R.
 
 \subsubsection{Related Work}
-Our algorithm builds on the work by Bar-Yossef \cite{paper:bar-yos}, which presents a technique for estimating the number of distinct items in a stream, using $O(1)$ space. If every item in the stream is hashed, and the smallest hashvalue, p, is stored. Then the number of distinct items in the stream can be approximated by $\bar{z}=1/p$. The variance of this can be reduced by storing the k smallest hashvalues, and use $\bar{z}=k/p$ as approximation.\\
+Our algorithm builds on the work by Bar-Yossef \cite{paper:bar-yos}, which presents a technique for estimating the number of distinct items in a stream, using $O(1)$ space. If every item in the stream is hashed, and the smallest hashvalue, p, is stored. Then the number of distinct items in the stream can be approximated by $\tilde{z}=1/p$. The variance of this can be reduced by storing the k smallest hashvalues, and use $\tilde{z}=k/p$ as approximation.\\
 
-Our work proposes a variant to the algorithm presented by Amossen et al, in \cite{paper:amossen}. They use the technique from \cite{paper:bar-yos}, along with a clever sorting trick, to estimate the size boolean matrix products in expected linear time.
+Our work proposes a variant to the algorithm presented by Amossen et al, in \cite{paper:amossen}. They use the technique from \cite{paper:bar-yos}, along with a clever sorting trick, to estimate the number of non-zero entries in boolean matrix products in expected linear time.
 
 %outline:
   %our twist / what we change in our variant
@@ -295,8 +295,8 @@ Intuitively we create a table for each value $i \in B$. These tables have the di
               $p_{max}$ $\leftarrow$ max(P) \;
               $F_s$ $\leftarrow$ $\emptyset$ \;
             }
-            $s$ $\leftarrow$ $(s + 1)$ mod $\left\vert A_{\pi} \right\vert$ \;
             }
+            $s$ $\leftarrow$ $(s + 1)$ mod $\left\vert A_{\pi} \right\vert$ \;
           }
         }
       }
