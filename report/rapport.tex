@@ -143,6 +143,7 @@ The relaxed version of round two produces drastically fewer pairs (one pair for 
 %Gammel -> The relaxed version of round two produces drastically fewer pairs (one pair for each actor, for each movie they starred in), compared to the strict version (two pairs for each unique pair of actors per movie). By making the mapper slightly smarter, the shuffler and reducers do much less work. But it also solves a slightly different problem, than the one we are interested in. Overall the performance on the given dataset is acceptable, but for significantly larger datasets, the number of pairs might cause a noticeable slowdown.
 
 \subsection{Verification of results}
+\label{sub:verification}
 We have designed the format of the output of our sequential algorithm, described in Section \ref{sub:sequential}, in such a way that it conforms to the format of the Map-Reduce algorithm described in Section \ref{sub:map-reduce}. 
 The output is thus on the form:
 \begin{verbatim}
@@ -227,8 +228,8 @@ Our work proposes a variant to the algorithm presented by Amossen et al, in \cit
   %preparation (introduction of variables)
 \subsubsection{Our Algorithm}
 \label{subsub:alg}
-To solve our problem we propose a variant of the algorithm shown by Amossen et al. in \cite{paper:amossen}. Instead of approximating the total number of distinct values $\pi_{ac}(R_1 \Join R_2)$ for $R_1(a,b)$, $R_2(b,c)$, we are interested in estimating the number of distinct values $\pi_{ac}(R_1 \Join R_2)$ for each distinct value of $a$ for $a \subseteq c$.\\ % C subset af a
-In regards to the popular problem our algorithm intuitively performs the following steps: Iterate through all the movies. For each movie we create pairs using the same approach as in \cite{paper:amossen} to reduce our work from polynomial time to linear time. Then afterwards we use the approximation technique brought forth by Bar-Yossef et al. in \cite{paper:bar-yos}, to compute our estimates.
+To solve our problem we propose a variant of the algorithm shown by Amossen et al. in \cite{paper:Amossen}. Instead of approximating the total number of distinct values $\pi_{ac}(R_1 \Join R_2)$ for $R_1(a,b)$, $R_2(b,c)$, we are interested in estimating the number of distinct values $\pi_{ac}(R_1 \Join R_2)$ for each distinct value of $a$ for $a \subseteq c$.\\ % C subset af a
+In regards to the popular problem our algorithm intuitively performs the following steps: Iterate through all the movies. For each movie we create pairs using the same approach as in \cite{paper:Amossen} to reduce our work from polynomial time to linear time. Then afterwards we use the first approximation technique brought forth by Bar-Yossef et al. in \cite{paper:Bar-Yossef}, to compute our estimates.
 
 \paragraph{Introduction}
 The algorithm uses the following functions and variables:
@@ -237,29 +238,33 @@ The algorithm uses the following functions and variables:
   \item $B$: $\pi_{b}(R_1 \cup R_2)$
   \item $A_i$: $\pi_{a}(\sigma_{b=i}(R_1))$
   \item $C_i$: $\pi_{c}(\sigma_{b=i}(R_2))$
-  \item Watch list: $W$: Chosen subset of $\pi_{a}(R_1)$
+  \item $W$: Chosen subset of $\pi_{a}(R_1)$
+  \item $F_s$:
+  \item $S_s$:
+  \item $p_s$:
+  \item $p_{max}$
   \item $k$: Size of sketches
   \item Hash function: $h_1 : \mathbb{R} \rightarrow [0,1]$
   \item Hash function: $h_2 : \mathbb{R} \rightarrow [0,1]$
   \item Hash function: $h : [0,1] \times [0,1] \rightarrow [0,1]$
 \end{itemize}
-Where $h_1$, $h_2$ and $h$ are pairwise independent.
-
-\paragraph{Approach}
-Intuitively we create a table for each value $i \in B$. These tables have the dimension $|A_i\cap W|\cdot | \times |C_i|$, where the rows are sorted according to $h_1$ and the columns are sorted according to $h_2$. Each entry in the table is the computed value of $h$ for the pair. We loop through this 
-
-The algorithm works by creating a hashmap mapping $R_1(c)$ to $R_1(b)$, which can be done in linear time. Then for each key we sort
-We start by looking at the distinct values of $\pi_{b}(R_1 \cup R_2)$
-
-In order for our algorithm to work we need three hash functions, $h_1(x)$, $h_2(x)$ and $h(x,y)$ which are pairwise independent and have outputs in the range [0,1]. $h_1$ and $h_2$ are chosen at random, but $h$ is defined as:
+Where $h_1$, $h_2$ and $h$ are pairwise independent. And $h$ is defined as:
 \begin{center}
 $h(x,y) = (h_1(x) - h_2(x))$ mod $1$
 \end{center}
 
-This is done by first looping through all values in $\pi_{b}(R_1 \cup R_2)$, denoted $B$. For each value, $i$ in $B$, we find all values in 
-As opposed to Amossen et al. where a single p, S and F are used, a seperate sketch for each value of $\pi_c(R_2)$ needs to be created. This means that buffers, sketches and approriate are kept seperate. To limit our lookups a $p_{max}$ variable is maintained containing the maximum value of all the $p$'s. This makes our second inner while-loop less optimized.
+\paragraph{Approach}
+Intuitively we create a table for each value $i \in B$. These tables have the dimension $|A_i\cap W|\cdot | \times |C_i|$, where the rows are sorted according to $h_1$ from top to bottom and the columns are sorted according to $h_2$ from left to right. Each entry in the table is the computed value of $h$ for the pair. The algorithm starts at the top left of the table, iterating through the rows of the column to find the place where the value we are looking at, is smaller than the values we looked at previously (TODO modular). This is the pivot point of the modulus operation in our $h$. This is guarenteed to be the minimum value of $h$ in the selected column. When the pivot point is reached, we continue looping through the column, now comparing each value to our $p_{max}$ for each loop, to check if one of the sketches might still possibly benefit from being visited. (We remark that this is different from Amossen et. al. where a single $p$ is maintained and checked against). Furthermore the value of $h$ is checked against $p_s$, and if the value of $h$ is lower, we add the pair $(s,t)$ (TODO introduce variables) to our buffer $F_s$. When the current value of $h$ is greater than $p_{max}$ we move on to the next column, starting from the row where we last encountered our pivot point. It is more efficient to start from the row that was last marked as a pivot point, as this utilizes that the columns are sorted according to $h_2$, limiting the number of iterations needed. When the buffers are filled, it is merged into the sketch using $O(k)$ time. Since we only do this every $k$ iterations this gives amortized linear running time. Once all $i \in B$ has been processed, we find our approximations \~{z}$_s$ by utilizing the result from Bar-Yossef et al giving us: \~{z}$_s$ = $k/p_s$
 
-W- watchlist - hashmap
+%The algorithm works by creating a hashmap mapping $R_1(c)$ to $R_1(b)$, which can be done in linear time. Then for each key we sort
+%We start by looking at the distinct values of $\pi_{b}(R_1 \cup R_2)$
+
+%In order for our algorithm to work we need three hash functions, $h_1(x)$, $h_2(x)$ and $h(x,y)$ which are pairwise independent and have outputs in the range [0,1]. $h_1$ and $h_2$ are chosen at random, but $h$ is defined as:
+
+%This is done by first looping through all values in $\pi_{b}(R_1 \cup R_2)$, denoted $B$. For each value, $i$ in $B$, we find all values in 
+%As opposed to Amossen et al. where a single p, S and F are used, a seperate sketch for each value of $\pi_c(R_2)$ needs to be created. This means that buffers, sketches and approriate are kept seperate. To limit our lookups a $p_{max}$ variable is maintained containing the maximum value of all the $p$'s. This makes our second inner while-loop less optimized.
+
+%W- watchlist - hashmap
 
 %description
   %our algorithm (this is the idea, we made it as a twist on pagh) - RDAM
@@ -335,7 +340,9 @@ The algorithm uses $O(k\cdot|W|)$ space, since it has to maintain $W$ individual
     %locality of reference?
 
 \subsubsection{Experiments}
-We have set up an experiment in which we choose 
+We have set up an experiment in which we run the size estimation algorithm 100 times, 
+each time generating two pairwise independent $h_1$ and $h_2$ functions. 
+Futhermore we have selected $W$ to be the top 10 actors introduced in Section \ref{sub:verification} 
 
 \begin{figure}[H]
 \centering \includegraphics[width=0.9\textwidth]{plot256.png}
