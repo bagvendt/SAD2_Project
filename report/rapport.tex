@@ -363,6 +363,9 @@ In every iteration and for each actor we calculate a ratio, "observed estimate" 
 \caption{k=1024}\label{fig:k1024}
 \label{fig:exp1024}
 \end{figure}
+
+We have compared the observed $\epsilon$ for 2/3 of the results with the theoretical $\epsilon$ for both $k$ values in Table \ref{tab:epsilon}
+
 \begin{table}[H]
     \begin{center}
     \begin{tabular}{l|l|l}
@@ -396,7 +399,7 @@ In every iteration and for each actor we calculate a ratio, "observed estimate" 
   %comparing results with part 1
 
 \subsection{Suggested Improvements}
-If $|W|<<n$ and the matrix is sparse, $|A_{\pi}|=1$ will occur often, Corresponding to iterating over a movie starring exactly one of the actors on the watchlist. In this case, the inner loop is poorly optimized. Firstly $p_i$ could be used, instead of $p_{max}$, and secondly it could be exploited that the values of $h(x_s, y_t)$ becomes smaller mod 1, when $t$ increases. Using a trick analogous to lines 11 to 13 in the pseudocode, could lower the bound on the inner loop from $O(p_{max}|A_i||C_i|)$ to $O(p|C_i|)$.
+If $|W|\ll n$ and the matrix is sparse, $|A_{\pi}|=1$ will occur often, Corresponding to iterating over a movie starring exactly one of the actors on the watchlist. In this case, the inner loop is poorly optimized. Firstly $p_i$ could be used, instead of $p_{max}$, and secondly it could be exploited that the values of $h(x_s, y_t)$ becomes smaller mod 1, when $t$ increases. Using a trick analogous to lines 11 to 13 in the pseudocode, could lower the bound on the inner loop from $O(p_{max}|A_i||C_i|)$ to $O(p|C_i|)$.
 
 %do something about combine
 
