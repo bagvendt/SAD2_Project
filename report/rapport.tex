@@ -225,10 +225,11 @@ Additionally, matrix multiplication can be expressed as the \emph{join-distinct}
   %pseudocode, done
 \subsubsection{Our Algorithm}
 To solve our problem we propose a variant of the algorithm shown by Amossen et al. in \cite{paper:Amossen}. Instead of approximating the total number of distinct values $\pi_{ac}(R_1 \Join R_2)$ for $R_1(a,b)$, $R_2(b,c)$, we are interested in estimating the number of distinct values $\pi_{ac}(R_1 \Join R_2)$ for each distinct value of $a$ for $a \subseteq c$.\\ % C subset af a
-In regards to the popular problem our algorithm can intuitively does the following steps: We iterate through all our movies. For each movie we use the same approach as in \cite{paper:Amossen} to reduce our work from polynomial time to linear time. Then afterwards we use the approximation technique brought forth by Bar-Yossef et al. in \cite{paper:Bar-Yossef}, to compute our estimates.
+In regards to the popular problem our algorithm intuitively performs the following steps: Iterate through all the movies. For each movie we create pairs using the same approach as in \cite{paper:Amossen} to reduce our work from polynomial time to linear time. Then afterwards we use the approximation technique brought forth by Bar-Yossef et al. in \cite{paper:Bar-Yossef}, to compute our estimates.
 
 \paragraph{Introduction}
 To be able to understand the algorithm we introduce the following variables:
+
 \begin{itemize}
   \item $B$: $\pi_{b}(R_1 \cup R_2)$
   \item $A_i$: $\pi_{a}(\sigma_{b=i}(R_1))$
@@ -331,6 +332,11 @@ The algorithm uses $O(|W|k)$ space, since it has to maintain $W$ individual sket
     %locality of reference?
 %experiments MABG
   %plots
+  %quality of approximation
+  %comparing results with part 1 
+%related work
+  %Bar-Yossef og Pagh
+
 \subsubsection{Experiments}
 \begin{figure}[h!]
 \centering \includegraphics[width=1\textwidth]{plot256.png}
@@ -355,6 +361,8 @@ The algorithm uses $O(|W|k)$ space, since it has to maintain $W$ individual sket
 If $|W|<<n$ and the matrix is sparse, $|A_{\pi}|=1$ will occur often, Corresponding to iterating over a movie starring exactly one of the actors on the watchlist. In this case, the inner loop is poorly optimized. Firstly $p_i$ could be used, instead of $p_{max}$, and secondly it could be exploited that the values of $h(x_s, y_t)$ becomes smaller mod 1, when $t$ increases. Using a trick analogous to (TODO sbar while loop) could lower the bound on the inner loop from $O(p_{max}|A_i||C_i|)$ to $O(p|C_i|)$.
 
 %do something about combine
+
+%Multicore snak, men pas på.
 
 \subsubsection{Conclusion}
 We have presented an algorithm for approximating the size of boolean matrix products per row. The algorithm runs in linear time, if $p_{max}$ is chosen correctly. TODO delete this or talk about choosing $p_{max}$!.
