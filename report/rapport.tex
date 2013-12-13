@@ -223,42 +223,46 @@ The Popular problem can be expressed as a boolean matrix multiplication. Conside
 Additionally, matrix multiplication can be expressed as the \emph{join-distinct} operation from relational algebra as follows: Consider the boolean matrix multiplication: $R = A \cdot C$. Let the relation $R_1$ be the pairs corresponding to the non-zero values in A, and the $R_2$ be the pairs corresponding to non-zero values in C. Now each unique pair in $R_1 \Join R_2$ will correspond to a non-zero value in R.
 
 \subsection{Related Work}
-Our algorithm builds on the work by Bar-Yossef \cite{paper:bar-yos}, which presents a technique for estimating the number of distinct items in a stream, using $O(1)$ space. If every item in the stream is hashed, and the smallest hashvalue, p, is stored. Then the number of distinct items in the stream can be approximated by $\bar{z}=1/p$. The variance of this can be reduced by storing the k smallest hashvalues, and use $\bar{z}=k/p$ as approximation.\\
+Our algorithm builds on the work by Bar-Yossef \cite{paper:bar-yos}, which presents a technique for estimating the number of distinct items in a stream, using $O(1)$ space (the first algorithm presented in the paper). If every item in the stream is hashed, and the smallest hashvalue, p, is stored. Then the number of distinct items in the stream can be approximated by $\bar{z}=1/p$. The variance of this can be reduced by storing the k smallest hashvalues, and use $\bar{z}=k/p$ as approximation.\\
 
-Our work proposes a variant to the algorithm presented by Amossen et al, in \cite{paper:amossen}. They use the technique from \cite{paper:bar-yos}, along with a clever sorting trick, to estimate the size boolean matrix products in expected linear time.
+Our work proposes a variant to the algorithm presented by Amossen et al. In \cite{paper:amossen}, they use the technique from \cite{paper:bar-yos}, along with a clever sorting trick, to estimate the size of boolean matrix products in expected linear time.
 
 %outline:
   %our twist / what we change in our variant
   %preparation (introduction of variables)
 \subsection{Our Algorithm}
 \label{subsub:alg}
-To solve our problem we propose a variant of the algorithm shown by Amossen et al. in \cite{paper:Amossen}. Instead of approximating the total number of distinct values $\pi_{ac}(R_1 \Join R_2)$ for $R_1(a,b)$, $R_2(b,c)$, we are interested in estimating the number of distinct values $\pi_{ac}(R_1 \Join R_2)$ for each distinct value of $a$ for $a \subseteq c$.\\ % C subset af a
-In regards to the popular problem our algorithm intuitively performs the following steps: Iterate through all the movies. For each movie we create pairs using the same approach as in \cite{paper:Amossen} to reduce our work from polynomial time to linear time. Then afterwards we use the first approximation technique brought forth by Bar-Yossef et al. in \cite{paper:Bar-Yossef}, to compute our estimates.
+To solve our problem we propose a variant of the algorithm in \cite{paper:amossen}. Instead of approximating the total number of distinct values in the matrix multiplication $\pi_{ac}(R_1 \Join R_2)$, where $R_1(a,b)$, $R_2(b,c)$, we estimate the number of distinct values of $\pi_{ac}(R_1 \Join R_2)$ for each distinct value of $a$ for $a \subseteq c$.\\ % C subset af a
+At a high level, our algorithm performs the following steps: It iterates over all values in B (the dimension that is joined away). For each value $i \in B$, we find all the pairs that would be joined for that particular i-value, and with some probability, we look at that pair. This is done to reduce our work from polynomial time to linear time. Afterwards we use the approximation technique brought forth by Bar-Yossef et al. in \cite{paper:bar-yos}, to compute the estimates.\\
 
-\paragraph{Introduction}
 The algorithm uses the following functions and variables:
 
 \begin{itemize}
   \item $B$: $\pi_{b}(R_1 \cup R_2)$
   \item $A_i$: $\pi_{a}(\sigma_{b=i}(R_1))$
+  \item $A_{\pi}$
   \item $C_i$: $\pi_{c}(\sigma_{b=i}(R_2))$
   \item $W$: Chosen subset of $\pi_{a}(R_1)$
-  \item $F_s$:
-  \item $S_s$:
-  \item $p_s$:
+  \item $F_s$: TODO
+  \item $S_s$: TODO
+  \item $p_s$: TODO
   \item $p_{max}$
   \item $k$: Size of sketches
   \item Hash function: $h_1 : \mathbb{R} \rightarrow [0,1]$
   \item Hash function: $h_2 : \mathbb{R} \rightarrow [0,1]$
   \item Hash function: $h : [0,1] \times [0,1] \rightarrow [0,1]$
-\end{itemize}
+\end{itemize} 
 Where $h_1$, $h_2$ and $h$ are pairwise independent. And $h$ is defined as:
 \begin{center}
 $h(x,y) = (h_1(x) - h_2(x))$ mod $1$
 \end{center}
 
 \paragraph{Approach}
-Intuitively we create a table for each value $i \in B$. These tables have the dimension $|A_i\cap W|\cdot | \times |C_i|$, where the rows are sorted according to $h_1$ from top to bottom and the columns are sorted according to $h_2$ from left to right. Each entry in the table is the computed value of $h$ for the pair. The algorithm starts at the top left of the table, iterating through the rows of the column to find the place where the value we are looking at, is smaller than the values we looked at previously (TODO modular). This is the pivot point of the modulus operation in our $h$. This is guarenteed to be the minimum value of $h$ in the selected column. When the pivot point is reached, we continue looping through the column, now comparing each value to our $p_{max}$ for each loop, to check if one of the sketches might still possibly benefit from being visited. (We remark that this is different from Amossen et. al. where a single $p$ is maintained and checked against). Furthermore the value of $h$ is checked against $p_s$, and if the value of $h$ is lower, we add the pair $(s,t)$ (TODO introduce variables) to our buffer $F_s$. When the current value of $h$ is greater than $p_{max}$ we move on to the next column, starting from the row where we last encountered our pivot point. It is more efficient to start from the row that was last marked as a pivot point, as this utilizes that the columns are sorted according to $h_2$, limiting the number of iterations needed. When the buffers are filled, it is merged into the sketch using $O(k)$ time. Since we only do this every $k$ iterations this gives amortized linear running time. Once all $i \in B$ has been processed, we find our approximations \~{z}$_s$ by utilizing the result from Bar-Yossef et al giving us: \~{z}$_s$ = $k/p_s$
+Intuitively we create a table for each value $i \in B$. These tables have the dimensions $|A_i\cap W|\cdot | \times |C_i|$, where the rows are sorted according to $h_1$ from top to bottom and the columns are sorted according to $h_2$ from left to right. Each entry in the table contains a computed value of $h$.\\
+
+The algorithm starts at the top left of the table (row s, column t), iterating over the rows of the left-most column to find a cell where the $h$-value is smaller than the one above it. We know that since the row is sorted in $h_1$, that this cell is guaranteed to have the smallest value of $h$ in the column. From this cell, we continue looping through the column, now comparing each value to $p_{max}$, to check if one of the sketches could possibly include the pair being considered. (We remark that this is different from Amossen et. al., where only a single $p$ is maintained and checked against). \\
+
+After the check against $p_{max}$, the value of $h$ is checked against $p_s$. If the value of $h$ is lower, we add the pair $(x_s, y_t)$ to the buffer $F_s$. When the current value of $h$ is greater than $p_{max}$ we move on to the next column, starting from the row where we found the minimum value in the previous column. This is more efficient, because it utilizes the fact that the columns are sorted according to $h_2$, limiting the number of iterations needed. When a buffer is filled, it is merged into the corresponding sketch, using the \texttt{COMBINE} procedure outlined in \cite{paper:amossen}. Once all $i \in B$ have been processed, we approximate \~{z}$_s$ by utilizing the result from Bar-Yossef et al. giving us: \~{z}$_s$ = $k/p_s$
 
 %The algorithm works by creating a hashmap mapping $R_1(c)$ to $R_1(b)$, which can be done in linear time. Then for each key we sort
 %We start by looking at the distinct values of $\pi_{b}(R_1 \cup R_2)$
@@ -321,12 +325,14 @@ Intuitively we create a table for each value $i \in B$. These tables have the di
       \Return $R$
       }
 
-\caption{Pseudocode for actor pair estimation\label{alg:size}}
+\caption{Pseudocode for DisItemsPerRow\label{alg:size}}
 \end{algorithm}
 \subsection{Analysis}
 \paragraph {Running Time}
 Following \cite{paper:amossen}, we split the analysis of the running time into two.
 The first part considers the \emph{while} loop on lines 15 to 24, and the second part considers the remaining work done.\\
+
+Every call to \texttt{COMBINE} takes $O(k)$ time, \cite{paper:amossen}. Since these calls happen, at most, every $k$ iterations of the inner loop, this gives amortized linear running time for \texttt{COMBINE}.\\
 
 \textit{while loop}. Every iteration will add at most one pair $(x_s, y_t)$ to one of the buffers, $F_i$. We can only safely exit the loop if $h(x_s, y_t) < p_{max}$, but a candidate pair will not be added unless $h(x_s, y_t) < p_s$, effectively wasting a number of iterations, proportional to $p_{max}-p_i$. Thus the expected number of iterations are $O(p_{max}|A_i||C_i|)$.\\
 
