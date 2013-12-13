@@ -243,11 +243,11 @@ The algorithm uses the following functions and variables:
   \item $A_{\pi}$
   \item $C_i$: $\pi_{c}(\sigma_{b=i}(R_2))$
   \item $W$: Chosen subset of $\pi_{a}(R_1)$ (the watchlist)
-  \item $F_s$: TODO
-  \item $S_s$: TODO
-  \item $p_s$: TODO
-  \item $p_{max}$
-  \item $k$: Size of sketches
+  \item $F_s$: Buffer containing between $[0:k]$ observed hash values for a given $s \in B$
+  \item $S_s$: Sketch containing the $k$ smallest observed hash values for a given $s \in B$
+  \item $p_s$: $k$ Probability that a new pair will be added to the sketch $F_s$
+  \item $p_{max}$: The maximum value of $P$
+  \item $k$: Size of the sketches
   \item Hash function: $h_1 : \mathbb{R} \rightarrow [0,1]$
   \item Hash function: $h_2 : \mathbb{R} \rightarrow [0,1]$
   \item Hash function: $h : [0,1] \times [0,1] \rightarrow [0,1]$
