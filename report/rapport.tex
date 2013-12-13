@@ -206,15 +206,14 @@ Our experiment does not contain enough data to make any sweeping conclusions, bu
 The experiment also shows that the sequential algorithm yields the fastest running time, we have been able to achieve. 
 It is our strong belief that if the dataset was larger we would see the distributed setup execute significantly faster than the sequential.
 
-\subsection{Solving the "Popular" problem by approximation}
+\subsection{Approximating the "Popular" problem}
 Computing the exact solution, using our Map-Reduce approach, may not scale well with the size of the input, due to the number of pairs emitted. In the following, we suggest an algorithm for approximating the solution, building on previous results by TODO REF PAGH.
 
 \subsubsection{Equivalence of problems}
 The Popular problem can be expressed as a boolean matrix multiplication. Consider a matrix A of size $|actors|*|movies|$, where the value $1$ at position $(x, y)$ means that actor $x$ starred in movie $y$. $R = A * A^T$ will then have the dimensions $|actors|*|actors|$, and a $1$ at position $(x, y)$ indicates that actor $x$ and $y$ starred in at least one movie together. Summing the number of non-zero entries in $R_{i,j}$ for a given $i$, gives the number of unique actors that actor $i$ starred with at least once, which is exactly the value we want to compute.\\
 Additionally, matrix multiplication can be expressed as the \emph{join-distinct} operation from relational algebra as follows: Consider the boolean matrix multiplication: $R = A \cdot C$. Let the relation $R_1$ be the pairs corresponding to the non-zero values in A, and the $R_2$ be the pairs corresponding to non-zero values in C. Now each unique pair in $R_1 \Join R_2$ will correspond to a non-zero value in R.
 
-
-\subsubsection{Related Works}
+\subsubsection{Related Work}
   %Bar-Yossef og Pagh
     %introduce Amossen algorithm
     %uses bar-yossef idea and clever trick where sorting the hashvalues can allow you to skip checking some of them.
@@ -228,17 +227,17 @@ To solve our problem we propose a variant of the algorithm shown by Amossen et a
 In regards to the popular problem our algorithm intuitively performs the following steps: Iterate through all the movies. For each movie we create pairs using the same approach as in \cite{paper:amossen} to reduce our work from polynomial time to linear time. Then afterwards we use the approximation technique brought forth by Bar-Yossef et al. in \cite{paper:Bar-Yossef}, to compute our estimates.
 
 \paragraph{Introduction}
-To be able to understand the algorithm we introduce the following variables:
+The algorithm uses the following functions and variables:
 
 \begin{itemize}
   \item $B$: $\pi_{b}(R_1 \cup R_2)$
   \item $A_i$: $\pi_{a}(\sigma_{b=i}(R_1))$
   \item $C_i$: $\pi_{c}(\sigma_{b=i}(R_2))$
-  \item $W$: Chosen subset of $\pi_{a}(R_1)$
-  \item $k$: Size of sketch
-  \item $h_1 : \mathbb{R} \rightarrow [0,1]$
-  \item $h_2 : \mathbb{R} \rightarrow [0,1]$
-  \item $h : [0,1] \times [0,1] \rightarrow [0,1]$
+  \item Watch list: $W$: Chosen subset of $\pi_{a}(R_1)$
+  \item $k$: Size of sketches
+  \item Hash function: $h_1 : \mathbb{R} \rightarrow [0,1]$
+  \item Hash function: $h_2 : \mathbb{R} \rightarrow [0,1]$
+  \item Hash function: $h : [0,1] \times [0,1] \rightarrow [0,1]$
 \end{itemize}
 Where $h_1$, $h_2$ and $h$ are pairwise independent.
 
@@ -320,22 +319,17 @@ The first part considers the \emph{while} loop on lines TODO - TODO, and the sec
 \textit{while loop}. Every iteration will add at most one pair $(x_s, y_t)$ to one of the buffers, $F_i$. We can only safely exit the loop if $h(x_s, y_t) < p_{max}$, but a candidate pair will not be added unless $h(x_s, y_t) < p_s$, effectively wasting a number of iterations, proportional to $p_{max}-p_i$. Thus the expected number of iterations are $O(p_{max}|A_i||C_i|)$.
 
 Remaining work\\
-The intersection on line 5, can be done in $O(|C_i|)$ time, using a hashtable.
+The intersection on line 5, can be done in $O(|W|+|C_i|)$ time, using a hashtable. Since $|W|<|C_i|$, this is equal to $O(|C_i|)$.
 Updating $P_{max}$ on line TODO can be done in $log(|W|)$ time, using a Heap.
-%it is important to set a tight initial p_max
-The overall time complexity is dominated by the execution of the inner loop, $O(n + \sum_i p_{max}|W||C_i|)$
-%worst-case time-complexity is the same as pagh
+
+The overall time complexity is dominated by the execution of the inner loop, $O(n + \sum_i p_{max}|W||C_i|)$.\\
+
+The worst-case running time is the same as TODO PAGH REF, but in actual use, we predict that our implementation will be significantly slower. This is due to the wasted work done in the inner loop, whenever $P_i < P_{max}$.
 
 \paragraph{Space Usage}
 The algorithm uses $O(|W|k)$ space, since it has to maintain $W$ individual sketches, each of size $O(k)$. It is worth noting, that the space usage is independent of the input size $n$. This is only a factor $|W|$ more than TODO PAGH REF, which is to be expected.
   %io
     %locality of reference?
-%experiments MABG
-  %plots
-  %quality of approximation
-  %comparing results with part 1 
-%related work
-  %Bar-Yossef og Pagh
 
 \subsubsection{Experiments}
 \begin{figure}[h!]
@@ -382,7 +376,7 @@ Counting distinct elements in a data stream. Springer-Verlag, 2002. (RANDOM '02)
 \end{thebibliography}
 
 %code in appendix
-
+%bibtex
 \section{Appendix}
 \textbf{Popular.java - Map-Reduce}
 \lstinputlisting[language=Java]{../map_reduce/popular/src/Popular.java}
