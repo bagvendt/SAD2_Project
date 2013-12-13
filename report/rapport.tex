@@ -91,7 +91,7 @@ This gives our sequential algorithm a worst-case running time of \BigO{a^2*m}. W
 
 \section{Map-Reduce Algorithm}
 \label{sub:map-reduce}
-\begin{figure}
+\begin{figure}[H]
 \centering \includegraphics[scale=0.2]{map-reduce-figure.png}
 \vspace{-10pt}
 \caption{Map-Reduce overview}
@@ -232,8 +232,8 @@ Our work proposes a variant to the algorithm presented by Amossen et al, in \cit
   %preparation (introduction of variables)
 \subsection{Our Algorithm}
 \label{subsub:alg}
-To solve our problem we propose a variant of the algorithm shown by Amossen et al. in \cite{paper:Amossen}. Instead of approximating the total number of distinct values $\pi_{ac}(R_1 \Join R_2)$ for $R_1(a,b)$, $R_2(b,c)$, we are interested in estimating the number of distinct values $\pi_{ac}(R_1 \Join R_2)$ for each distinct value of $a$ for $a \subseteq c$.\\ % C subset af a
-In regards to the popular problem our algorithm intuitively performs the following steps: Iterate through all the movies. For each movie we create pairs using the same approach as in \cite{paper:Amossen} to reduce our work from polynomial time to linear time. Then afterwards we use the first approximation technique brought forth by Bar-Yossef et al. in \cite{paper:Bar-Yossef}, to compute our estimates.
+To solve our problem we propose a variant of the algorithm shown by Amossen et al. in \cite{paper:amossen}. Instead of approximating the total number of distinct values $\pi_{ac}(R_1 \Join R_2)$ for $R_1(a,b)$, $R_2(b,c)$, we are interested in estimating the number of distinct values $\pi_{ac}(R_1 \Join R_2)$ for each distinct value of $a$ for $a \subseteq c$.\\ % C subset af a
+In regards to the popular problem our algorithm intuitively performs the following steps: Iterate through all the movies. For each movie we create pairs using the same approach as in \cite{paper:amossen} to reduce our work from polynomial time to linear time. Then afterwards we use the first approximation technique brought forth by Bar-Yossef et al. in \cite{paper:bar-yos}, to compute our estimates.
 
 \paragraph{Introduction}
 The algorithm uses the following functions and variables:
@@ -343,7 +343,7 @@ The algorithm uses $O(k\cdot|W|)$ space, since it has to maintain $W$ individual
   %io
     %locality of reference?
 
-\subsubsection{Experiments}
+\subsection{Experiments}
 We have set up an experiment in which we run our modified size estimation algorithm 100 times on the "Popular" problem, 
 each time generating two pairwise independent $h_1$ and $h_2$ functions. 
 Futhermore we have selected $W$ to be the top 10 actors introduced in Section \ref{sub:verification}. 
@@ -407,6 +407,8 @@ If $|W|\ll n$ and the matrix is sparse, $|A_{\pi}|=1$ will occur often, Correspo
 
 \subsection{Conclusion}
 We have presented an algorithm for approximating the size of boolean matrix products per row. The algorithm runs in linear time, if $p_{max}$ is chosen correctly. TODO delete this or talk about choosing $p_{max}$!.
+
+\newpage
 
 \begin{thebibliography}{}
 
