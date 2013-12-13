@@ -135,7 +135,7 @@ The amount of work done in each mapper/reducer is close to being balanced. Obvio
 The number of pairs generated in round two, is proportional to the number of unique pairs of actors that starred in a movie together. For every movie that has A actors starring in it, $2*A(A-1)$ pairs will be emitted. %TODO does this need a further explanation?
 
 This is a large amount of pairs, but we cannot see how this number can be reduced, without relaxing the constraint that a pair of actors should be counted only once. If that constraint is lifted, the round two mapper can simply emit (Actor, Movies.Actors.count - 1), meaning that "this actor starred with n other actors in some movie". The reducers could then simply sum all those counts, to get the total.\footnote{This optimization captures the same idea as the standard 'Wordcount' optimization example, where the mapper keeps a local dictionary of words and counts, instead of mindlessly emitting (word, 1) duplicate pairs multiple times.}\\
-% TODO: Should we analyse the other version as an approximation algorithm for the initial problem.
+
 The relaxed version of round two produces drastically fewer pairs (one pair for each actor, for each movie they starred in), compared to the strict version (two pairs for each unique pair of actors per movie). By making the mapper slightly smarter, the shuffler and reducers do much less work. But it also solves a slightly different problem, than the one we are interested in. Overall the performance on the given dataset is acceptable, but for significantly larger datasets, the number of pairs might cause a noticeable slowdown.
 
 \subsection{Verification of results}
@@ -247,7 +247,7 @@ Intuitively we create a table for each value $i \in B$. These tables have the di
 The algorithm works by creating a hashmap mapping $R_1(c)$ to $R_1(b)$, which can be done in linear time. Then for each key we sort
 We start by looking at the distinct values of $\pi_{b}(R_1 \cup R_2)$
 
-In order for our algorithm to work we need three hash functions, $h_1(x)$, $h_2(x)$ and $h(x,y)$ which are pairwise independant and all maps into the range [0,1]. $h_1$ and $h_2$ are chosen at random but $h$ is defined as:
+In order for our algorithm to work we need three hash functions, $h_1(x)$, $h_2(x)$ and $h(x,y)$ which are pairwise independent and have outputs in the range [0,1]. $h_1$ and $h_2$ are chosen at random, but $h$ is defined as:
 \begin{center}
 $h(x,y) = (h_1(x) - h_2(x))$ mod $1$
 \end{center}
@@ -259,8 +259,7 @@ W- watchlist - hashmap
 
 %description
   %our algorithm (this is the idea, we made it as a twist on pagh) - RDAM
-  %universal hashing??? move to reference?
-\subsubsection{Pseudocode} % (fold)
+\subsubsection{Pseudocode}
 \label{sub:pseudocode}
 % Fix så det bliver til procedure
 \begin{algorithm}[H]
@@ -281,23 +280,23 @@ W- watchlist - hashmap
           $\bar{s}$ $\leftarrow$ $(\bar{s} + 1)$ mod $\left\vert A_{\pi} \right\vert$ \;
         }
         $s$ $\leftarrow$ $\bar{s}$ \;
-        \While{$h(x_s,y_t) < P_s$ }
+        \While{$h(x_s,y_t) < P_{max}$ }
         {
-          $F_s$ $\leftarrow$ $F_s \cup \{ (x_s , y_t) \}$ \;
-          \If{$\left\vert F_s \right\vert$ = k}{
-            ($P_s,S_s$) $\leftarrow$ \texttt{COMBINE}($S_s,F_s$) \;
+          \If{$h(x_s,y_t) < P_s$} {
+            $F_s$ $\leftarrow$ $F_s \cup \{ (x_s , y_t) \}$ \;
+            \If{$\left\vert F_s \right\vert$ = k}{
+              ($P_s,S_s$) $\leftarrow$ \texttt{COMBINE}($S_s,F_s$) \;
 
-            $p_{max}$ $\leftarrow$ max(P) \;
-            $F_s$ $\leftarrow$ $\emptyset$ \;
+              $p_{max}$ $\leftarrow$ max(P) \;
+              $F_s$ $\leftarrow$ $\emptyset$ \;
+            }
+            $s$ $\leftarrow$ $(s + 1)$ mod $\left\vert A_{\pi} \right\vert$ \;
+            }
           }
-          $s$ $\leftarrow$ $(s + 1)$ mod $\left\vert A_{\pi} \right\vert$ \;
         }
-        }
-      
-
       }
       $R$ $\leftarrow$ $\emptyset$ \;
-      \For{$u := 1 \in W$}{ 
+      \For{$u \in W$}{ 
         ($p_u,S_u$) $\leftarrow$ \texttt{COMBINE}($S_u,F_u$) \;
         \If{$\left\vert S_u \right\vert$ = k}{
           $R$ $\leftarrow$ $R \cup \{ (k / p_u, u) \}$ \;
@@ -313,21 +312,21 @@ W- watchlist - hashmap
 \end{algorithm}
 \subsubsection{Analysis}
 \paragraph {Running Time}
-Following TODO PAGH REF, we split the analysis of the running time into two.
-The first part considers the \emph{while} loop on lines TODO - TODO, and the second part considers the remaining work done.
+Following \cite{paper:amossen}, we split the analysis of the running time into two.
+The first part considers the \emph{while} loop on lines 15 to 24, and the second part considers the remaining work done.
 
 \textit{while loop}. Every iteration will add at most one pair $(x_s, y_t)$ to one of the buffers, $F_i$. We can only safely exit the loop if $h(x_s, y_t) < p_{max}$, but a candidate pair will not be added unless $h(x_s, y_t) < p_s$, effectively wasting a number of iterations, proportional to $p_{max}-p_i$. Thus the expected number of iterations are $O(p_{max}|A_i||C_i|)$.
 
 Remaining work\\
 The intersection on line 5, can be done in $O(|W|+|C_i|)$ time, using a hashtable. Since $|W|<|C_i|$, this is equal to $O(|C_i|)$.
-Updating $P_{max}$ on line TODO can be done in $log(|W|)$ time, using a Heap.
+Updating $P_{max}$ on line 20 can be done in $log(|W|)$ time, using a Heap.
 
 The overall time complexity is dominated by the execution of the inner loop, $O(n + \sum_i p_{max}|W||C_i|)$.\\
 
-The worst-case running time is the same as TODO PAGH REF, but in actual use, we predict that our implementation will be significantly slower. This is due to the wasted work done in the inner loop, whenever $P_i < P_{max}$.
+The worst-case running time is the same as \cite{paper:amossen}, but in actual use, we predict that our implementation will be significantly slower. This is due to the wasted work done in the inner loop, whenever $P_i < P_{max}$.
 
 \paragraph{Space Usage}
-The algorithm uses $O(|W|k)$ space, since it has to maintain $W$ individual sketches, each of size $O(k)$. It is worth noting, that the space usage is independent of the input size $n$. This is only a factor $|W|$ more than TODO PAGH REF, which is to be expected.
+The algorithm uses $O(|W|k)$ space, since it has to maintain $W$ individual sketches, each of size $O(k)$. It is worth noting, that the space usage is independent of the input size $n$. This is only a factor $|W|$ more than \cite{paper:amossen}, which is to be expected.
   %io
     %locality of reference?
 
@@ -342,6 +341,7 @@ The algorithm uses $O(|W|k)$ space, since it has to maintain $W$ individual sket
 \caption{k=1024}
 \label{fig:exp1024}
 \end{figure}
+
 %explanation of experiments
 %quality of approximation
   %valg af k
@@ -352,7 +352,7 @@ The algorithm uses $O(|W|k)$ space, since it has to maintain $W$ individual sket
   %comparing results with part 1
 
 \subsubsection{Suggested Improvements}
-If $|W|<<n$ and the matrix is sparse, $|A_{\pi}|=1$ will occur often, Corresponding to iterating over a movie starring exactly one of the actors on the watchlist. In this case, the inner loop is poorly optimized. Firstly $p_i$ could be used, instead of $p_{max}$, and secondly it could be exploited that the values of $h(x_s, y_t)$ becomes smaller mod 1, when $t$ increases. Using a trick analogous to (TODO sbar while loop) could lower the bound on the inner loop from $O(p_{max}|A_i||C_i|)$ to $O(p|C_i|)$.
+If $|W|<<n$ and the matrix is sparse, $|A_{\pi}|=1$ will occur often, Corresponding to iterating over a movie starring exactly one of the actors on the watchlist. In this case, the inner loop is poorly optimized. Firstly $p_i$ could be used, instead of $p_{max}$, and secondly it could be exploited that the values of $h(x_s, y_t)$ becomes smaller mod 1, when $t$ increases. Using a trick analogous to lines 11 to 13 in the pseudocode, could lower the bound on the inner loop from $O(p_{max}|A_i||C_i|)$ to $O(p|C_i|)$.
 
 %do something about combine
 
@@ -376,7 +376,6 @@ Counting distinct elements in a data stream. Springer-Verlag, 2002. (RANDOM '02)
 \end{thebibliography}
 
 %code in appendix
-%bibtex
 \section{Appendix}
 \textbf{Popular.java - Map-Reduce}
 \lstinputlisting[language=Java]{../map_reduce/popular/src/Popular.java}
