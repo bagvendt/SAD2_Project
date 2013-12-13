@@ -213,9 +213,13 @@ Computing the exact solution, using our Map-Reduce approach, may not scale well 
 The Popular problem can be expressed as a boolean matrix multiplication. Consider a matrix A of size $|actors|*|movies|$, where the value $1$ at position $(x, y)$ means that actor $x$ starred in movie $y$. $R = A * A^T$ will then have the dimensions $|actors|*|actors|$, and a $1$ at position $(x, y)$ indicates that actor $x$ and $y$ starred in at least one movie together. Summing the number of non-zero entries in $R_{i,j}$ for a given $i$, gives the number of unique actors that actor $i$ starred with at least once, which is exactly the value we want to compute.\\
 Additionally, matrix multiplication can be expressed as the \emph{join-distinct} operation from relational algebra as follows: Consider the boolean matrix multiplication: $R = A \cdot C$. Let the relation $R_1$ be the pairs corresponding to the non-zero values in A, and the $R_2$ be the pairs corresponding to non-zero values in C. Now each unique pair in $R_1 \Join R_2$ will correspond to a non-zero value in R.
 
-%outline:
-  %introduce Amossen algorithm
+
+\subsubsection{Related Works}
+  %Bar-Yossef og Pagh
+    %introduce Amossen algorithm
     %uses bar-yossef idea and clever trick where sorting the hashvalues can allow you to skip checking some of them.
+
+%outline:
   %our twist / what we change in our variant
   %preparation (introduction of variables)
   %pseudocode, done
@@ -256,7 +260,7 @@ W- watchlist - hashmap
 %description
   %our algorithm (this is the idea, we made it as a twist on pagh) - RDAM
   %universal hashing??? move to reference?
-\subsection{Pseudocode} % (fold)
+\subsubsection{Pseudocode} % (fold)
 \label{sub:pseudocode}
 % Fix så det bliver til procedure
 \begin{algorithm}[H]
@@ -327,10 +331,6 @@ The algorithm uses $O(|W|k)$ space, since it has to maintain $W$ individual sket
     %locality of reference?
 %experiments MABG
   %plots
-  %quality of approximation
-  %comparing results with part 1
-%related works 
-  %Bar-Yossef og Pagh
 \subsubsection{Experiments}
 \begin{figure}[h!]
 \centering \includegraphics[width=1\textwidth]{plot256.png}
@@ -342,6 +342,14 @@ The algorithm uses $O(|W|k)$ space, since it has to maintain $W$ individual sket
 \caption{k=1024}
 \label{fig:exp1024}
 \end{figure}
+%explanation of experiments
+%quality of approximation
+  %valg af k
+  %sammenhæng mellem k og sigma
+  %eksperimentel validering af sammenhængen
+  %estimaterne går i fløjten hvis k er for stor
+  %sigma blir stor, hvis k er for lille
+  %comparing results with part 1
 
 \subsubsection{Suggested Improvements}
 If $|W|<<n$ and the matrix is sparse, $|A_{\pi}|=1$ will occur often, Corresponding to iterating over a movie starring exactly one of the actors on the watchlist. In this case, the inner loop is poorly optimized. Firstly $p_i$ could be used, instead of $p_{max}$, and secondly it could be exploited that the values of $h(x_s, y_t)$ becomes smaller mod 1, when $t$ increases. Using a trick analogous to (TODO sbar while loop) could lower the bound on the inner loop from $O(p_{max}|A_i||C_i|)$ to $O(p|C_i|)$.
