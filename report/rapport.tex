@@ -224,8 +224,8 @@ Additionally, matrix multiplication can be expressed as the \emph{join-distinct}
   %preparation (introduction of variables)
   %pseudocode, done
 \subsubsection{Our Algorithm}
-To solve our problem we propose a variant of the algorithm shown by Amossen et al. in \cite{paper:Amossen}. Instead of approximating the total number of distinct values $\pi_{ac}(R_1 \Join R_2)$ for $R_1(a,b)$, $R_2(b,c)$, we are interested in estimating the number of distinct values $\pi_{ac}(R_1 \Join R_2)$ for each distinct value of $a$ for $a \subseteq c$.\\ % C subset af a
-In regards to the popular problem our algorithm intuitively performs the following steps: Iterate through all the movies. For each movie we create pairs using the same approach as in \cite{paper:Amossen} to reduce our work from polynomial time to linear time. Then afterwards we use the approximation technique brought forth by Bar-Yossef et al. in \cite{paper:Bar-Yossef}, to compute our estimates.
+To solve our problem we propose a variant of the algorithm shown by Amossen et al. in \cite{paper:amossen}. Instead of approximating the total number of distinct values $\pi_{ac}(R_1 \Join R_2)$ for $R_1(a,b)$, $R_2(b,c)$, we are interested in estimating the number of distinct values $\pi_{ac}(R_1 \Join R_2)$ for each distinct value of $a$ for $a \subseteq c$.\\ % C subset af a
+In regards to the popular problem our algorithm intuitively performs the following steps: Iterate through all the movies. For each movie we create pairs using the same approach as in \cite{paper:amossen} to reduce our work from polynomial time to linear time. Then afterwards we use the approximation technique brought forth by Bar-Yossef et al. in \cite{paper:Bar-Yossef}, to compute our estimates.
 
 \paragraph{Introduction}
 To be able to understand the algorithm we introduce the following variables:
@@ -367,6 +367,19 @@ If $|W|<<n$ and the matrix is sparse, $|A_{\pi}|=1$ will occur often, Correspond
 \subsubsection{Conclusion}
 We have presented an algorithm for approximating the size of boolean matrix products per row. The algorithm runs in linear time, if $p_{max}$ is chosen correctly. TODO delete this or talk about choosing $p_{max}$!.
 
+\begin{thebibliography}{}
+\bibitem{paper:amossen}
+Rasmus Resen Amossen, Andrea Campagna, Rasmus Pagh
+Better Size Estimation for Sparse Matrix Products. Algorithmica, March 2013.
+
+\bibitem{paper:bar-yos}
+Z. Bar-Yossef, T. S. Jayram, R. Kumar, D. Sivakumar, and L. Trevisan.
+Counting distinct elements in a data stream. Springer-Verlag, 2002. (RANDOM '02)
+      %Sådan her ref'er man en URL
+      %\bibitem{lit:json}
+      %\url{http://tools.ietf.org/html/rfc4627}
+      %Retrieved: 2013-05-02
+\end{thebibliography}
 
 %code in appendix
 
@@ -379,6 +392,7 @@ We have presented an algorithm for approximating the size of boolean matrix prod
 \lstinputlisting[language=Python]{../tools/sequential_popular.py}
 \textbf{sort\_and\_expand - Sort the output, and add actor names}
 \lstinputlisting[language=Python]{../tools/sort_and_expand.py}
+
 
 
 \end{document}
