@@ -221,10 +221,11 @@ Additionally, matrix multiplication can be expressed as the \emph{join-distinct}
   %pseudocode, done
 \subsubsection{Our Algorithm}
 To solve our problem we propose a variant of the algorithm shown by Amossen et al. in \cite{paper:Amossen}. Instead of approximating the total number of distinct values $\pi_{ac}(R_1 \Join R_2)$ for $R_1(a,b)$, $R_2(b,c)$, we are interested in estimating the number of distinct values $\pi_{ac}(R_1 \Join R_2)$ for each distinct value of $a$ for $a \subseteq c$.\\ % C subset af a
-In regards to the popular problem our algorithm can intuitively does the following steps: We iterate through all our movies. For each movie we use the same approach as in \cite{paper:Amossen} to reduce our work from polynomial time to linear time. Then afterwards we use the approximation technique brought forth by Bar-Yossef et al. in \cite{paper:Bar-Yossef}, to compute our estimates.
+In regards to the popular problem our algorithm intuitively performs the following steps: Iterate through all the movies. For each movie we create pairs using the same approach as in \cite{paper:Amossen} to reduce our work from polynomial time to linear time. Then afterwards we use the approximation technique brought forth by Bar-Yossef et al. in \cite{paper:Bar-Yossef}, to compute our estimates.
 
 \paragraph{Introduction}
 To be able to understand the algorithm we introduce the following variables:
+
 \begin{itemize}
   \item $B$: $\pi_{b}(R_1 \cup R_2)$
   \item $A_i$: $\pi_{a}(\sigma_{b=i}(R_1))$
