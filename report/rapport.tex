@@ -91,7 +91,7 @@ This gives our sequential algorithm a worst-case running time of \BigO{a^2*m}. W
 
 \section{Map-Reduce Algorithm}
 \label{sub:map-reduce}
-\begin{figure}
+\begin{figure}[H]
 \centering \includegraphics[scale=0.2]{map-reduce-figure.png}
 \vspace{-10pt}
 \caption{Map-Reduce overview}
@@ -232,7 +232,7 @@ Our work proposes a variant to the algorithm presented by Amossen et al. In \cit
   %preparation (introduction of variables)
 \subsection{Our Algorithm}
 \label{subsub:alg}
-To solve our problem we propose a variant of the algorithm in \cite{paper:amossen}. Instead of approximating the total number of distinct values in the matrix multiplication $\pi_{ac}(R_1 \Join R_2)$, where $R_1(a,b)$, $R_2(b,c)$, we estimate the number of distinct values of $\pi_{ac}(R_1 \Join R_2)$ for each distinct value of $a$ for $a \subseteq c$.\\ % C subset af a
+To solve our problem, we propose a variant of the algorithm in \cite{paper:amossen}. Instead of approximating the total number of distinct values in the matrix multiplication $\pi_{ac}(R_1 \Join R_2)$, where $R_1(a,b)$, $R_2(b,c)$, we estimate the number of distinct values of $\pi_{ac}(R_1 \Join R_2)$ for each distinct value of $a$ for $a \subseteq c$.\\ % C subset af a
 At a high level, our algorithm performs the following steps: It iterates over all values in B (the dimension that is joined away). For each value $i \in B$, we find all the pairs that would be joined for that particular i-value, and with some probability, we look at that pair. This is done to reduce our work from polynomial time to linear time. Afterwards we use the approximation technique brought forth by Bar-Yossef et al. in \cite{paper:bar-yos}, to compute the estimates.\\
 
 The algorithm uses the following functions and variables:
@@ -349,21 +349,29 @@ The algorithm uses $O(k\cdot|W|)$ space, since it has to maintain $W$ individual
   %io
     %locality of reference?
 
-\subsubsection{Experiments}
-We have set up an experiment in which we run the size estimation algorithm 100 times, 
+\subsection{Experiments}
+We have set up an experiment in which we run our modified size estimation algorithm 100 times on the "Popular" problem, 
 each time generating two pairwise independent $h_1$ and $h_2$ functions. 
-Futhermore we have selected $W$ to be the top 10 actors introduced in Section \ref{sub:verification} 
+Futhermore we have selected $W$ to be the top 10 actors introduced in Section \ref{sub:verification}. 
+
+In every iteration we have set the initial value of $p$ to 1, to make sure that we fill the sketches as much as possible.
+These 100 iterations has been run with k=256 and k=1024. 
+
+In every iteration and for each actor we calculate a ratio, "observed estimate" / "actual value". By sorting these ratios we can draw the ratio/"cumulative distribution function" graph, for both $k$ values. These graphs are presented in Figure \ref{fig:k256} and \ref{fig:k1024}
 
 \begin{figure}[H]
 \centering \includegraphics[width=0.9\textwidth]{plot256.png}
-\caption{k=256}
+\caption{k=256}\label{fig:k256}
 \label{fig:exp256}
 \end{figure}
 \begin{figure}[H]
 \centering \includegraphics[width=0.9\textwidth]{plot1024.png}
-\caption{k=1024}
+\caption{k=1024}\label{fig:k1024}
 \label{fig:exp1024}
 \end{figure}
+
+We have compared the observed $\epsilon$ for 2/3 of the results with the theoretical $\epsilon$ for both $k$ values in Table \ref{tab:epsilon}
+
 \begin{table}[H]
     \begin{center}
     \begin{tabular}{l|l|l}
@@ -397,7 +405,7 @@ Futhermore we have selected $W$ to be the top 10 actors introduced in Section \r
   %comparing results with part 1
 
 \subsection{Suggested Improvements}
-If $|W|<<n$ and the matrix is sparse, $|A_{\pi}|=1$ will occur often, Corresponding to iterating over a movie starring exactly one of the actors on the watchlist. In this case, the inner loop is poorly optimized. Firstly $p_i$ could be used, instead of $p_{max}$, and secondly it could be exploited that the values of $h(x_s, y_t)$ becomes smaller mod 1, when $t$ increases. Using a trick analogous to lines 11 to 13 in the pseudocode, could lower the bound on the inner loop from $O(p_{max}|A_i||C_i|)$ to $O(p|C_i|)$.
+If $|W|\ll n$ and the matrix is sparse, $|A_{\pi}|=1$ will occur often, Corresponding to iterating over a movie starring exactly one of the actors on the watchlist. In this case, the inner loop is poorly optimized. Firstly $p_i$ could be used, instead of $p_{max}$, and secondly it could be exploited that the values of $h(x_s, y_t)$ becomes smaller mod 1, when $t$ increases. Using a trick analogous to lines 11 to 13 in the pseudocode, could lower the bound on the inner loop from $O(p_{max}|A_i||C_i|)$ to $O(p|C_i|)$.
 
 %do something about combine
 
@@ -405,6 +413,8 @@ If $|W|<<n$ and the matrix is sparse, $|A_{\pi}|=1$ will occur often, Correspond
 
 \subsection{Conclusion}
 We have presented an algorithm for approximating the size of boolean matrix products per row. The algorithm runs in linear time, if $p_{max}$ is chosen correctly. TODO delete this or talk about choosing $p_{max}$!.
+
+\newpage
 
 \begin{thebibliography}{}
 
