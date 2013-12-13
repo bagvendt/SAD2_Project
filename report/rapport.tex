@@ -219,7 +219,7 @@ It is our strong belief that if the dataset was larger we would see the distribu
 Computing the exact solution, using our Map-Reduce approach, may not scale well with the size of the input, due to the number of pairs emitted. In the following, we suggest an algorithm for approximating the solution, building on previous results by \cite{paper:amossen}.
 
 \subsection{Equivalence of problems}
-The Popular problem can be expressed as a boolean matrix multiplication. Consider a matrix A of size $|actors| \cdot |movies|$, where the value $1$ at position $(x, y)$ means that actor $x$ starred in movie $y$. $R = A * A^T$ will then have the dimensions $|actors| \cdot |actors|$, and a $1$ at position $(x, y)$ indicates that actor $x$ and $y$ starred in at least one movie together. Summing the number of non-zero entries in $R_{i,j}$ for a given $i$, gives the number of unique actors that actor $i$ starred with at least once, which is exactly the value we want to compute.\\
+The Popular problem can be expressed as a boolean matrix multiplication. Consider a matrix A of size $|actors| \cdot |movies|$, where the value $1$ at position $(x, y)$ means that actor $x$ starred in movie $y$. $R = A \cdot A^T$ will then have the dimensions $|actors| \cdot |actors|$, and a $1$ at position $(x, y)$ indicates that actor $x$ and $y$ starred in at least one movie together. Summing the number of non-zero entries in $R_{i,j}$ for a given $i$, gives the number of unique actors that actor $i$ starred with at least once, which is exactly the value we want to compute.\\
 Additionally, matrix multiplication can be expressed as the \emph{join-distinct} operation from relational algebra as follows: Consider the boolean matrix multiplication: $R = A \cdot C$. Let the relation $R_1$ be the pairs corresponding to the non-zero values in A, and the $R_2$ be the pairs corresponding to non-zero values in C. Now each unique pair in $R_1 \Join R_2$ will correspond to a non-zero value in R.
 
 \subsubsection{Related Work}
@@ -401,7 +401,8 @@ A choice of $k=1024$ corresponds to $\epsilon=\sqrt{9/1024}=0.0936$. The $\epsil
 \subsection{Suggested Improvements}
 If $|W|\ll n$ and the matrix is sparse, $|A_{\pi}|=1$ will occur often, Corresponding to iterating over a movie starring exactly one of the actors on the watchlist. In this case, the inner loop is poorly optimized. Firstly $p_i$ could be used, instead of $p_{max}$, and secondly it could be exploited that the values of $h(x_s, y_t)$ becomes smaller mod 1, when $t$ increases. Using a trick analogous to lines 11 to 13 in the pseudocode, could lower the bound on the inner loop from $O(p_{max}|A_i||C_i|)$ to $O(p|C_i|)$.
 
-%Multicore snak, men pas på.
+We observe that the size estimation algorithm could be parallelized by spawning a thread for each movie  $i \in B$. Each time some S and F is to be updated, either by adding to a pair to F or by calling the procedure COMBINE on them, a mutex lock could be introduced to enforce atomicity. 
+
 
 \subsection{Conclusion}
 We have presented an algorithm for approximating the size of boolean matrix products per row. The algorithm runs in linear time, if $p_{max}$ is chosen correctly. TODO delete this or talk about choosing $p_{max}$!. The approximations lie within a factor $\epsilon$ of the actual value, with a probability of $2/3$.
