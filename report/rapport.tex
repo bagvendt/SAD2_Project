@@ -329,9 +329,10 @@ The algorithm uses $O(|W|k)$ space, since it has to maintain $W$ individual sket
 %experiments MABG
   %plots
   %quality of approximation
-  %comparing results with part 1
-%related works 
+  %comparing results with part 1 
+%related work
   %Bar-Yossef og Pagh
+
 \subsubsection{Experiments}
 \begin{figure}[h!]
 \centering \includegraphics[width=1\textwidth]{plot256.png}
@@ -348,6 +349,8 @@ The algorithm uses $O(|W|k)$ space, since it has to maintain $W$ individual sket
 If $|W|<<n$ and the matrix is sparse, $|A_{\pi}|=1$ will occur often, Corresponding to iterating over a movie starring exactly one of the actors on the watchlist. In this case, the inner loop is poorly optimized. Firstly $p_i$ could be used, instead of $p_{max}$, and secondly it could be exploited that the values of $h(x_s, y_t)$ becomes smaller mod 1, when $t$ increases. Using a trick analogous to (TODO sbar while loop) could lower the bound on the inner loop from $O(p_{max}|A_i||C_i|)$ to $O(p|C_i|)$.
 
 %do something about combine
+
+%Multicore snak, men pas på.
 
 \subsubsection{Conclusion}
 We have presented an algorithm for approximating the size of boolean matrix products per row. The algorithm runs in linear time, if $p_{max}$ is chosen correctly. TODO delete this or talk about choosing $p_{max}$!.
