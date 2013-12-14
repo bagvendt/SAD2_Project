@@ -11,6 +11,7 @@
 \usepackage{hyperref}   % use for hypertext links, including those to external documents and URLs
 \usepackage{url}
 \usepackage{float}
+\usepackage{todonotes}
 \usepackage{tikz}
 \usepackage{enumitem}
 \usepackage{hyperref}
@@ -74,6 +75,7 @@
 \setcounter{page}{1}
 \section{The "Popular" problem}
 \subsection{Introduction}
+\todo{Generalize to entire report?}
 In this section, we try to answer the question: "How many unique co-actors has a a given actor starred alongside", we call this the \emph{Popular} problem. In the following, we will develop and execute a Map-Reduce algorithm using the Hadoop framework, both locally and on the Amazon Elastic Cloud service.
 \paragraph{}
 To validate and compare the Map-Reduce implementation, we will implement a simple, sequential algorithm that solves the same problem. In order to make the problem harder, we have converted the IMDB dataset to a format that forces the Map-Reduce algorithm to use 2 rounds of computation.
@@ -83,9 +85,9 @@ To allow for comparison between the sequential and the Map-Reduce algorithms, we
 \section{Naïve Sequential Algorithm}
 \label{sub:sequential}
 %TODO reference for inverted index
-In the sequential algorithm we build an inverted index, that maps movies to the actors that star in them. This allows us to check which actors appear in which film in constant time. Building the index takes \BigO{a*m} time, where \emph{a} is the number of actors and \emph{m} is the number of movies\\
+In the sequential algorithm we build an inverted index, that maps movies to the actors that star in them using a hash table. This allows us to check which actors appear in which film in constant time. Building the index takes \BigO{a*m} time, where \emph{a} is the number of actors and \emph{m} is the number of movies\\
 
-When the inverted index is built, we iterate over all actors in the dataset, and for each actor we iterate over the movies they appear in, and for each of those, we note their co-actors. For each co-actor a given actor has starred with we add it to that actors total. Even though all lookups are implemented to be done in constant time, having 3 nested loops, we get a running time of \BigO{a^2*m}. Finally we write the output, which takes another \BigO{a*m} time.\\
+When the inverted index is built, we iterate over all actors in the dataset, and for each actor we iterate over the movies they appear in, and for each of those, we note their co-actors. For each co-actor a given actor has starred with, we add it to that actors total. Even though all lookups are implemented to be done in constant time, having 3 nested loops, we get a running time of \BigO{a^2*m}. Finally we write the output, which takes another \BigO{a*m} time.\\
 
 This gives our sequential algorithm a worst-case running time of \BigO{a^2*m}. When running the algorithm on the dataset, the actual running time is much better than the theoretical worst-case. If we envision a matrix with actors and movies, where each entry is 1 if the actor appeared in the movie, or empty otherwise, we can see that the matrix is pretty sparse with the given IMDB dataset. As a result the actual running time of our algorithm will be much lower.
 
