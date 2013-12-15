@@ -73,16 +73,14 @@
 \thispagestyle{empty}
 \newpage
 \setcounter{page}{1}
-\section{The "Popular" problem}
-\todo{Er subsection nødvendig?}
-\subsection{Introduction}
+\section{Introduction}
 
-\todo{We should introduce entire report, as the report is no longer seperated into 2 parts}
-In this section, we try to answer the question: "How many unique co-actors has a given actor starred alongside", we call this the \emph{Popular} problem. In the following, we will develop and execute a Map-Reduce algorithm using the Hadoop framework, both locally and on the Amazon Elastic Cloud service.
-\paragraph{}
-To validate and compare the Map-Reduce implementation, we will implement a simple, sequential algorithm that solves the same problem. In order to make the problem harder, we have converted the IMDB dataset \todo{Er "IMDB dataset" for indforstået?} to a format that forces the Map-Reduce algorithm to use 2 rounds of computation.
-\paragraph{} 
-To allow for comparison between the sequential and the Map-Reduce algorithms, we have made the sequential algorithm accept the same input.
+In this report, we try to answer the question: "How many unique co-actors has a given actor starred alongside", we call this the \emph{Popular} problem. We will propose two ways of solving the problem: One using the Map-Reduce framework provided by Hadoop, and another using an approximation algorithm. Both algorithms will be tested on a dataset containing a small subset of the data available at IMDB\footnote{IMDB is a site containg information about movies and actors, available at www.imdb.com}.\\
+
+To compare the speed of our Map-Reduce implementation and the accuracy of our approximation algorithm, a naïve sequential implementation has been created to compare with. For learning purposes we have projected our data from the dataset, to be of the form List(Movie, List<Actor>), as this forces us to use two rounds in our Map-Reduce algorithm. The sequential algorithm recieves the same input to be able to make a fair comparison. To further compare, our Map-Reduce algorithm will be tested on both a local setting and on Amazon Elastic MapReduce service\footnote{\url{https://aws.amazon.com/elasticmapreduce/}}.
+% To validate and compare the Map-Reduce implementation, we will implement a simple, sequential algorithm that solves the same problem. In order to make the problem harder, we have converted the IMDB dataset \todo{Er "IMDB dataset" for indforstået?} to a format that forces the Map-Reduce algorithm to use 2 rounds of computation.
+% \paragraph{} 
+% To allow for comparison between the sequential and the Map-Reduce algorithms, we have made the sequential algorithm accept the same input.
 %TODO skriv noget om problem size, antal actors, antal movies, textfil størrelse
 \section{Naïve Sequential Algorithm}
 \label{sub:sequential}
@@ -145,7 +143,7 @@ The amount of work done in each mapper/reducer is close to being balanced. Obvio
 The number of pairs generated in round two, is proportional to the number of unique pairs of actors that starred in a movie together. For every movie that has A actors starring in it, $2*A(A-1)$ pairs will be emitted. %TODO does this need a further explanation?
 
 This is a large amount of pairs, but we cannot see how this number can be reduced, without relaxing the constraint that a pair of actors should be counted only once. If that constraint is lifted, the round two mapper can simply emit (Actor, Movies.Actors.count - 1), meaning that "this actor starred with n other actors in some movie". The reducers could then simply sum all those counts, to get the total.\footnote{This optimization captures the same idea as the standard 'Wordcount' optimization example, where the mapper keeps a local dictionary of words and counts, instead of mindlessly emitting (word, 1) duplicate pairs multiple times.}
-\todo{Giver det mening at have med?}In that case the best guarentee we can give for our approximation for each actor, $\tilde{z}_i$, is $\tilde{z}_i \leq z_i |m_i|$, where $m_i$ is that actors total number of movies and $i$ is the actors index. This is the case when an actor has only played with the same group of people.
+In that case the best guarentee we can give for our approximation for each actor, $\tilde{z}_i$, is $\tilde{z}_i \leq z_i |m_i|$, where $m_i$ is that actors total number of movies and $i$ is the actors index. This is the case when an actor has only played with the same group of people. \todo{Giver det mening at have nederste analyse med?}
 \\
 
 The relaxed version of round two produces drastically fewer pairs (one pair for each actor, for each movie they starred in), compared to the strict version (two pairs for each unique pair of actors per movie). By making the mapper slightly smarter, the shuffler and reducers do much less work. But it also solves a slightly different problem, than the one we are initially interested in. Overall the performance on the given dataset is acceptable, but for significantly larger datasets, the number of pairs might cause a noticeable slowdown. 
@@ -335,7 +333,7 @@ After the check against $p_{max}$, the value of $h$ is checked against $p_s$. If
 \end{algorithm}
 \subsection{Analysis}
 \paragraph {Running Time}
-Following \cite{paper:amossen}, we split the analysis of the running time into two.\todo{Skal vi skrive de følger samme fremgangsmåde?}
+Following \cite{paper:amossen}, we split the analysis of the running time into two.\todo{Behøver vi skrive at vi følger deres fremgangsmåde?}
 The first part considers the \emph{while} loop on lines 15 to 24, and the second part considers the remaining work done.\\
 
 Every call to \texttt{COMBINE} takes $O(k)$ time, \cite{paper:amossen}. Since these calls happen, at most, every $k$ iterations of the inner loop, this gives amortized linear running time for \texttt{COMBINE}.\\
