@@ -75,9 +75,9 @@
 \setcounter{page}{1}
 \section{Introduction}
 
-In this report, we try to answer the question: "How many unique co-actors has a given actor starred alongside", we call this the \emph{Popular} problem. We will describe three methods that solves the problem: One Naïve implementation, One using the Map-Reduce framework provided by Hadoop, and another using an approximation algorithm. All three methods will be tested on a dataset containing a small subset of the data available at IMDB\footnote{IMDB is a site containing information about movies and actors, available at www.imdb.com}.\\
+In this report, we try to answer the question: "How many unique co-actors has a given actor starred alongside", we call this the \emph{Popular} problem. We will describe three methods that solves the problem: One Naïve implementation, One using the Map-Reduce framework provided by Hadoop, and another using an approximation algorithm. All three methods will be tested on the supplied IMDB Dataset\footnote{IMDB is a site containing information about movies and actors, available at www.imdb.com}.\\
 
-To compare the speed of our Map-Reduce implementation and the accuracy of our approximation algorithm, a naïve sequential implementation has been created to compare with. For learning purposes we have projected our data from the dataset, to be of the form List(Movie, List<Actor>), as this forces us to use two rounds in our Map-Reduce algorithm. The sequential algorithm receives the same input to be able to make a fair comparison. To further compare, our Map-Reduce algorithm will be tested on both a local setting and on Amazon Elastic MapReduce service\footnote{\url{https://aws.amazon.com/elasticmapreduce/}}.
+To compare the speed of our Map-Reduce implementation and the accuracy of our approximation algorithm, a naïve sequential implementation has been created to compare with. For learning purposes we have projected our data from the dataset, to be of the form List<Movie, List<Actor>>, as this forces us to use two rounds in our Map-Reduce algorithm. The sequential algorithm receives the same input to be able to make a fair comparison. To further compare, our Map-Reduce algorithm will be tested on both a local setting and on Amazon Elastic MapReduce service\footnote{\url{https://aws.amazon.com/elasticmapreduce/}}.
 % To validate and compare the Map-Reduce implementation, we will implement a simple, sequential algorithm that solves the same problem. In order to make the problem harder, we have converted the IMDB dataset \todo{Er "IMDB dataset" for indforstået?} to a format that forces the Map-Reduce algorithm to use 2 rounds of computation.
 % \paragraph{} 
 % To allow for comparison between the sequential and the Map-Reduce algorithms, we have made the sequential algorithm accept the same input.
@@ -85,11 +85,11 @@ To compare the speed of our Map-Reduce implementation and the accuracy of our ap
 \section{Naïve Sequential Algorithm}
 \label{sub:sequential}
 %TODO reference for inverted index
-In the sequential algorithm we build an inverted index, that maps movies to the actors that star in them, using a hash table. This allows us to check which actors appear in which film in constant time. Building the index takes \BigO{a*m} time, where \emph{a} is the number of actors and \emph{m} is the number of movies\\
+In the sequential algorithm we build an inverted index, that maps movies to the actors that star in them, using a hash table. This allows us to check which actors appear in which film in constant time. Building the index takes \BigO{a\cdot m} time, where \emph{a} is the number of actors and \emph{m} is the number of movies\\
 
-When the inverted index is built, we iterate over all actors in the dataset, and for each actor we iterate over the movies they appear in, and for each of those, we note their co-actors. For each co-actor a given actor has starred with, we add it to that actors total. Even though all lookups are implemented to be done in constant time, having 3 nested loops, we get a running time of \BigO{a^2*m}. Finally we write the output, which takes another \BigO{a*m} time.\\
+When the inverted index is built, we iterate over all actors in the dataset, and for each actor we iterate over the movies they appear in, and for each of those, we note their co-actors. For each co-actor a given actor has starred with, we add it to that actors total. Even though all lookups are implemented to be done in constant time, having 3 nested loops, we get a running time of \BigO{a^2 \cdot m}. Finally we write the output, which takes another \BigO{a \cdot m} time.\\
 
-This gives our sequential algorithm a worst-case running time of \BigO{a^2*m}. When running the algorithm on our dataset, the actual running time is much better than the theoretical worst-case. We see this is intuitively true as the actor/movie relations can also be seen as a spare boolean matrix, which means we will only perform work on a small part of our matrix. This, in turn, yields a much lower running time for this dataset than in the worst case.
+This gives our sequential algorithm a worst-case running time of \BigO{a^2 \cdot m}. When running the algorithm on our dataset, the actual running time is much better than the theoretical worst-case. We see this is intuitively true as the actor/movie relations can also be seen as a spare boolean matrix, which means we will only perform work on a small part of our matrix. This, in turn, yields a much lower running time for this dataset than in the worst case.
 
 \section{Map-Reduce Algorithm}
 \label{sub:map-reduce}
@@ -107,7 +107,7 @@ Goal: Transform input pairs (Actor, List<Movie>) into output pairs (Movie, List<
 
 The mappers break down the (Actor, List<Movie>) pairs into a series of (Movie, Actor) pairs, one for each Movie in the input List<Movie>, essentially emitting the information: "this actor played in this movie".\\
 
-The shuffle phase (handled implicitly by the Hadoop framework), directs each pair emitted by a mapper, to a reducer, such that every pair with a given key $k$, is sent as input to a single reducer $R_k$.\\
+The shuffle phase (handled by the Hadoop framework), directs each pair emitted by a mapper, to a reducer, such that every pair with a given key $k$, is sent as input to a single reducer $R_k$.\\
 
 The reducers each receive a list of (Movie, Actor) pairs, and builds from those a single pair (Movie, List<Actor>) by simply appending each actor to a list. The output of round one is thus, a pivot of the input data changing the shape from (Actor, List<Movie>) to (Movie, List<Actor>), essentially saying "this movie contained exactly these actors".
 
@@ -141,11 +141,11 @@ The amount of work done in each mapper/reducer is close to being balanced. Obvio
 \paragraph{Number of pairs}
 The number of pairs generated in round two, is proportional to the number of unique pairs of actors that starred in a movie together. For every movie that has A actors starring in it, $2 \cdot A(A-1)$ pairs will be emitted. %TODO does this need a further explanation?
 
-This is a large amount of pairs, but we cannot see how this number can be reduced, without relaxing the constraint that a pair of actors should be counted only once. If that constraint is lifted, the round two mapper can simply emit (Actor, Movies.Actors.count - 1), meaning that "this actor starred with n other actors in some movie". The reducers could then simply sum all those counts, to get the total.\footnote{This optimization captures the same idea as the standard 'Wordcount' optimization example, where the mapper keeps a local dictionary of words and counts, instead of mindlessly emitting (word, 1) duplicate pairs multiple times.}
+This is a large amount of pairs, but we cannot see how this number can be reduced, without relaxing the constraint that a pair of actors should be counted only once. If that constraint is lifted, the round two mapper can simply emit (Actor, Movies.Actors.count - 1), meaning that "this actor starred with n other actors in some movie". The reducers could then simply sum all those counts, to get the total.
 In that case the best guarantee we can give for our approximation for each actor, $\tilde{z}_i$, is $\tilde{z}_i \leq z_i |m_i|$, where $m_i$ is that actors total number of movies and $i$ is the actors index. This is the case when an actor has only played with the same group of people. \todo{Giver det mening at have nederste analyse med?}
 \\
 
-The relaxed version of round two produces drastically fewer pairs (one pair for each actor, for each movie they starred in), compared to the strict version (two pairs for each unique pair of actors per movie). By making the mapper slightly smarter, the shuffler and reducers do much less work. But it also solves a slightly different problem, than the one we are initially interested in. Overall the performance on the given dataset is acceptable, but for significantly larger datasets, the number of pairs might cause a noticeable slowdown. 
+The relaxed version of round two produces drastically fewer pairs (one pair for each actor, for each movie they starred in), compared to the exact version (two pairs for each unique pair of actors per movie). By making the mapper slightly smarter, the shuffler and reducers do much less work. But it also solves a slightly different problem, than the one we are initially interested in. Overall the performance on the given dataset is acceptable, but for significantly larger datasets, the number of pairs emitted, might cause a noticeable slowdown. 
 
 
 \subsection{Verification of results}
@@ -166,7 +166,7 @@ The role of this script is firstly to sort the input by \texttt{Actor\_ID} and s
 Having three different outputs produced by a: the sequential algorithm, b: the Map-Reduce algorithm run on a local machine, and c: the Map-Reduce algorithm run on the Amazon Elastic MapReduce service, we then transform these outputs using the script.
 Using the UNIX tool \texttt{diff}, whose job it is to output the difference between two files, we see that that all three outputs are exactly the same.
 
-The fact that the two algorithms, developed by using different programming languages and different algorithmic paradigms, produce the same output, gives us a very high confidence in the correctness of both implementations. The odds of introducing the same systematic error into both, are extremely low.
+The fact that the two algorithms, developed by using different programming languages and different algorithmic paradigms, produce the same output, gives us a very high confidence in the correctness of both implementations.
 
 The first 10 lines of the output, i.e the top 10 actors that has starred with most unique actors are: 
 \begin{verbatim}
@@ -182,7 +182,7 @@ The first 10 lines of the output, i.e the top 10 actors that has starred with mo
 (433904, 'Martin Sheen', 5764)
 \end{verbatim}
 
-Taking one sample from the output we see from Bess Flowers' Wikipedia that she was a Hollywood extra that has appeared in over 700 movies. It seems safe to assume that since she has starred in so many movies she would also be starring with a lot of other actors
+Taking a sample from the output we see from Bess Flowers' Wikipedia that she was a Hollywood extra that has appeared in over 700 movies. It seems safe to assume that since she has starred in so many movies she would also be starring with a lot of other actors
 
 We realize that this is not a formal proof that the algorithm produces the correct output.
 
@@ -218,24 +218,24 @@ The experiment also shows that the sequential algorithm yields the fastest runni
 It is our strong belief that if the dataset was larger we would see the distributed setup execute significantly faster than the sequential. It is our belief that the reason for the aquired result is the overhead associated to distributed systems and Map-Reduce specifically.
 
 \section{Approximating the "Popular" problem}
-Computing the exact solution, using our Map-Reduce approach, may not scale well with the size of the input, due to the number of pairs emitted. In the following, we suggest an algorithm for approximating the solution, building on previous work by \cite{paper:amossen}.
+Computing the exact solution, using our Map-Reduce approach, may not scale well with the size of the input, due to the number of pairs emitted. In the following, we suggest an algorithm for approximating the solution, building on previous work by Amossen et al. in \cite{paper:amossen}.
 
 \subsection{Equivalence of problems}
-The Popular problem can be expressed as a boolean matrix multiplication. Consider a matrix $m_1$ of size $|actors| \cdot |movies|$, where the value $1$ at position $(x, y)$ means that actor $x$ starred in movie $y$. $M = m_1 \cdot m_2$, where $m_2 = m_1^T$, will then have the dimensions $|actors| \cdot |actors|$, and a $1$ at position $(x, y)$ indicates that actor $x$ and $y$ starred in at least one movie together. Summing the number of non-zero entries in $M_{i,j}$ for a given $i$, gives the number of unique actors that actor $i$ starred with at least once, which is exactly the value we want to compute.\\
+The Popular problem can be expressed as a boolean matrix multiplication. Consider a matrix $m_1$ of size $|actors| \cdot |movies|$, where the value $1$ at position $(x, y)$ means that actor $x$ starred in movie $y$. The matrix multiplication: $M = m_1 \cdot m_2$, where $m_2 = m_1^T$, will then have the dimensions $|actors| \cdot |actors|$, and a $1$ at position $(x, y)$ indicates that actor $x$ and $y$ starred in at least one movie together. Summing the number of non-zero entries in $M_{i,j}$ for a given $i$, gives the number of unique actors that actor $i$ starred with at least once, which is exactly the value we want to compute.\\
 Additionally, matrix multiplication can be expressed as the \emph{join-distinct} operation from relational algebra as follows: Consider the boolean matrix multiplication: $M = m_1 \cdot m_2$. Let the relation $R_1$ be the pairs corresponding to the non-zero values in $m_1$, and let $R_2$ be the pairs corresponding to non-zero values in $m_2$. Now each unique pair in $R_1 \Join R_2$ will correspond to a non-zero value in $M$.
 
 \subsubsection{Related Work}
-Our algorithm builds on the work by Bar-Yossef \cite{paper:bar-yos}, which presents a technique for estimating the number of distinct items in a stream, using $O(1)$ space. If every item in the stream is hashed, and the smallest hash value, p, is stored. Then the number of distinct items in the stream, $\tilde{z}$, can be approximated by $\tilde{z}=1/p$. The variance of this can be reduced by storing the k smallest hash values, and use $\tilde{z}=k/p$ as approximation.\\
+Our work proposes a variant to the algorithm presented in \cite{paper:amossen}. They use an approximation technique presented by Bar-Yossef in \cite{paper:bar-yos}, along with a clever sorting trick, to estimate the number of non-zero entries in boolean matrix products in expected linear time. \todo{Er det "kun" expected?}
 
-Our work proposes a variant to the algorithm presented by Amossen et al, in \cite{paper:amossen}. They use the technique from \cite{paper:bar-yos}, along with a clever sorting trick, to estimate the number of non-zero entries in boolean matrix products in expected linear time. \todo{Er det "kun" expected?}
+\cite{paper:bar-yos} presents a technique for estimating the number of distinct items in a stream, using $O(1)$ space. If every item in the stream is hashed, and the smallest hash value, p, is stored. The number of distinct items in the stream, $\tilde{z}$, can be approximated by $\tilde{z}=1/p$. The variance of this can be reduced by storing the k smallest hash values, and use $\tilde{z}=k/p$ as approximation.\\
 
 %outline:
   %our twist / what we change in our variant
   %preparation (introduction of variables)
 \subsection{Our Algorithm}
 \label{subsub:alg}
-Instead of approximating the total number of distinct values in the matrix multiplication $\pi_{ac}(R_1 \Join R_2)$, with $R_1(a,b)$, $R_2(b,c)$, as done by Amossen et. al., we estimate the number of distinct values of $\pi_{ac}(R_1 \Join R_2)$ for each distinct value of $a$ for $a \subseteq c$.\\ % C subset af a
-At a high level, our algorithm performs the following steps: It iterates over all values in B (the dimension that is joined away). For each value $i \in B$, we find all the pairs that would be joined for that particular i-value, and with some probability, we look at that pair. This is done to reduce our work from polynomial time to linear time. Afterwards we use the approximation technique brought forth by Bar-Yossef et al. in \cite{paper:bar-yos}, to compute the estimates.\\
+Instead of approximating the total number of distinct values in the matrix multiplication $\pi_{ac}(R_1 \Join R_2)$, with $R_1(a,b)$, $R_2(b,c)$, as done by Amossen et. al., we estimate the number of distinct values of $\pi_{ac}(R_1 \Join R_2)$ for each distinct value of $a$ for $a \subseteq c$. We call this subset the 'Watchlist', $W$, and assume that $|W| << |c|$ \\
+At a high level, our algorithm performs the following steps: It iterates over all values in B (the dimension that is joined away). For each value $i \in B$, we find all the pairs that would be joined for that particular $i$, and with some probability, we look at that pair. This is done to reduce our work from polynomial time to linear time. Afterwards we use the approximation technique from \cite{paper:bar-yos}, to compute estimates.\\
 
 The algorithm uses the following functions and variables:
 
@@ -259,11 +259,11 @@ $h(x,y) = (h_1(x) - h_2(x))$ mod $1$
 \end{center}
 
 \paragraph{Approach}
-Intuitively we create a table for each value $i \in B$. These tables have the dimensions $|A_i\cap W|\cdot | \times |C_i|$, where the rows are sorted according to $h_1$ from top to bottom and the columns are sorted according to $h_2$ from left to right. Each entry in the table contains a computed value of $h$.\\
+Intuitively\footnote{Only the cells evaluated will have their $h$ value computed} we create a table for each value $i \in B$. These tables have the dimensions $|A_i\cap W|\cdot | \times |C_i|$, where the rows are sorted according to $h_1$ from top to bottom and the columns are sorted according to $h_2$ from left to right. Each entry in the table contains a computed value of $h$.\\
 
-The algorithm starts at the top left of the table (row s, column t), iterating over the rows of the left-most column to find a cell where the $h$-value is smaller than the one above it. We know that since the row is sorted in $h_1$, that this cell is guaranteed to have the smallest value of $h$ in the column. From this cell, we continue looping through the column, now comparing each value to $p_{max}$, to check if one of the sketches could possibly include the pair being considered. (We remark that this is different from Amossen et. al., where only a single $p$ is maintained and checked against). \\
+The algorithm starts at the top left of the table (row s, column t), iterating over the rows of the left-most column to find a cell where the $h$-value is smaller than the one above it. We know that since the row is sorted in $h_1$, that this cell is guaranteed to have the smallest value of $h$ in the column. From this cell, we continue looping through the column, now comparing each value to $p_{max}$, to check if one of the sketches could possibly include the pair being considered. (We remark that this is different from \cite{paper:amossen}, where only a single $p$ is maintained and checked against). \\
 
-After the check against $p_{max}$, the value of $h$ is checked against $p_s$. If the value of $h$ is lower, we add the pair $(x_s, y_t)$ to the buffer $F_s$. When the current value of $h$ is greater than $p_{max}$ we move on to the next column, starting from the row where we found the minimum value in the previous column. This is more efficient, because it utilizes the fact that the columns are sorted according to $h_2$, limiting the number of iterations needed. When a buffer is filled, it is merged into the corresponding sketch, using the \texttt{COMBINE}. \texttt{COMBINE} works by finding the median and then move smaller values into the sketch, in linear time\footnote{The procedure is outline in greater detail in \cite{paper:amossen}}. Once all $i \in B$ have been processed, we approximate \~{z}$_s$ by utilizing the result from Bar-Yossef et al. giving us: \~{z}$_s$ = $k/p_s$
+After the check against $p_{max}$, the value of $h$ is checked against $p_s$. If the value of $h$ is lower, we add the pair $(x_s, y_t)$ to the buffer $F_s$. When the current value of $h$ is greater than $p_{max}$ we move on to the next column, starting from the row where we found the minimum value in the previous column. This is more efficient, because it utilizes the fact that the columns are sorted according to $h_2$, limiting the number of iterations needed. When a buffer is filled, it is merged into the corresponding sketch, using the \texttt{COMBINE} procedure. \texttt{COMBINE} works by finding the median and then move smaller values into the sketch, in linear time\footnote{The procedure is outline in greater detail in \cite{paper:amossen}}. Once all $i \in B$ have been processed, we approximate \~{z}$_s$ by utilizing the result from \cite{paper:bar-yos} giving us: \~{z}$_s$ = $k/p_s$
 
 %The algorithm works by creating a hashmap mapping $R_1(c)$ to $R_1(b)$, which can be done in linear time. Then for each key we sort
 %We start by looking at the distinct values of $\pi_{b}(R_1 \cup R_2)$
@@ -333,9 +333,8 @@ After the check against $p_{max}$, the value of $h$ is checked against $p_s$. If
 We split the analysis of the running time into two.
 The first part considers the \emph{while} loop on lines 15 to 24, and the second part considers the remaining work done.\\
 
-Every call to \texttt{COMBINE} takes $O(k)$ time, \cite{paper:amossen}. Since these calls happen, at most, every $k$ iterations of the inner loop, this gives amortized linear running time for \texttt{COMBINE}.\\
+\textit{while loop}. Every iteration will add at most one pair $(x_s, y_t)$ to one of the buffers, $F_i$. We can only safely exit the loop if $h(x_s, y_t) < p_{max}$, but a candidate pair will not be added unless $h(x_s, y_t) < p_s$, effectively wasting a number of iterations, proportional to $p_{max}-p_i$. Thus the expected number of iterations are $O(p_{max}|W||C_i|)$.\\ Every call to \texttt{COMBINE} takes $O(k)$ time, \cite{paper:amossen}. Since these calls happen, at most, every $k$ iterations of the inner loop, this gives amortized linear running time for \texttt{COMBINE}.\\
 
-\textit{while loop}. Every iteration will add at most one pair $(x_s, y_t)$ to one of the buffers, $F_i$. We can only safely exit the loop if $h(x_s, y_t) < p_{max}$, but a candidate pair will not be added unless $h(x_s, y_t) < p_s$, effectively wasting a number of iterations, proportional to $p_{max}-p_i$. Thus the expected number of iterations are $O(p_{max}|W||C_i|)$.\\
 
 \textit{Remaining work}.
 The intersection on line 5, can be done in $O(|W|+|C_i|)$ time, using a hash table. Since $|W|<|C_i|$, this is equal to $O(|C_i|)$.
@@ -416,10 +415,7 @@ Secondly we have introduced a solution to the problem in a distributed environme
 
 
 Lastly we have presented an algorithm for approximating the size of boolean matrix products per row. The algorithm runs in linear time, if $p_{max}$ is chosen correctly\todo{Har ikke nævnt noget om hvad $p_{max}$ i så fald skal sættes til}. The approximations lie within a factor $1\pm\epsilon$ of the actual value, with a probability of $2/3$.\todo{Skal også konkludere på Map-Reduce vs sequential}
-
-We consider our contribution as success since we in all of the presented cases have been able to demonstrate a correct, or approximated solution. 
-We do, however, realize that our per-row boolean matrix product approximation requires some modifications before it is suitable to be generalized.
-
+ 
 \newpage
 
 \begin{thebibliography}{}
