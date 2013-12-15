@@ -139,7 +139,7 @@ The algorithm runs in a constant number of rounds (2), independent of the proble
 The amount of work done in each mapper/reducer is close to being balanced. Obviously, the round two reducer assigned to the most productive actor in the dataset, will do more work than the reducer assigned to an actor that only star in a single movie, but in terms of the input size, these numbers are very close to each other. This is only true because no actor has played in a significant fraction of the total number of movies in the dataset.\footnote{If this was not true, additional techniques, beyond the scope of this project, would be needed to balance the workload.} \todo{Hashfunction til at rette op på skewness. Flere til hver reducer udjævner uligheder. Bare en tanke}
 
 \paragraph{Number of pairs}
-The number of pairs generated in round two, is proportional to the number of unique pairs of actors that starred in a movie together. For every movie that has A actors starring in it, $2*A(A-1)$ pairs will be emitted. %TODO does this need a further explanation?
+The number of pairs generated in round two, is proportional to the number of unique pairs of actors that starred in a movie together. For every movie that has A actors starring in it, $2 \cdot A(A-1)$ pairs will be emitted. %TODO does this need a further explanation?
 
 This is a large amount of pairs, but we cannot see how this number can be reduced, without relaxing the constraint that a pair of actors should be counted only once. If that constraint is lifted, the round two mapper can simply emit (Actor, Movies.Actors.count - 1), meaning that "this actor starred with n other actors in some movie". The reducers could then simply sum all those counts, to get the total.\footnote{This optimization captures the same idea as the standard 'Wordcount' optimization example, where the mapper keeps a local dictionary of words and counts, instead of mindlessly emitting (word, 1) duplicate pairs multiple times.}
 In that case the best guarantee we can give for our approximation for each actor, $\tilde{z}_i$, is $\tilde{z}_i \leq z_i |m_i|$, where $m_i$ is that actors total number of movies and $i$ is the actors index. This is the case when an actor has only played with the same group of people. \todo{Giver det mening at have nederste analyse med?}
@@ -196,7 +196,7 @@ In the distributed setup we used the online web service Amazon Elastic Mapreduce
 
 The results of the experiment is seen in Table \ref{tab:benchmark}
 
-\begin{table}[h!]
+\begin{table}[H]
 
 \begin{center}
     \begin{tabular}{|l|l|l|l|l|}
@@ -405,8 +405,20 @@ If $|W|\ll n$ and the matrix is sparse, $|A_{\pi}|=1$ will occur often, Correspo
 We observe that the size estimation algorithm could be parallelized by spawning a thread for each movie  $i \in B$. Each time some S and F is to be updated, either by adding to a pair to F or by calling the procedure COMBINE on them, a mutex lock could be introduced to enforce atomicity. 
 
 
-\subsection{Conclusion}
-We have presented an algorithm for approximating the size of boolean matrix products per row. The algorithm runs in linear time, if $p_{max}$ is chosen correctly. TODO delete this or talk about choosing $p_{max}$!. The approximations lie within a factor $\epsilon$ of the actual value, with a probability of $2/3$.\todo{Skal også konkludere på Map-Reduce vs sequential}
+\section{Conclusion}
+In this report we have presented three methods to find the most popular actors in the IMDB dataset.
+
+
+Firstly we presented a simple Naïve solution that just iterates over all possible actor-actor combinations. The purpose of presenting this solution was merely to use it's results as the ground truth for the following two methods.
+
+
+Secondly we have introduced a solution to the problem in a distributed environment, using techniques that conform to the Map-Reduce framework as it is implemented in Apache Hadoop.
+
+
+Lastly we have presented an algorithm for approximating the size of boolean matrix products per row. The algorithm runs in linear time, if $p_{max}$ is chosen correctly. TODO delete this or talk about choosing $p_{max}$!. The approximations lie within a factor $\epsilon$ of the actual value, with a probability of $2/3$.\todo{Skal også konkludere på Map-Reduce vs sequential}
+
+We consider our contribution as success since we in all of the presented cases have been able to demonstrate a correct, or aprroximated solution. 
+We do however realize that our per-row boolean matrix product approximation requires some modifications before it is suitable to be generalized.
 
 \newpage
 
