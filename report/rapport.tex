@@ -78,6 +78,9 @@
 In this report, we try to answer the question: "How many unique co-actors has a given actor starred alongside", we call this the \emph{Popular} problem. We will describe three methods that solves the problem: One Naïve implementation, One using the Map-Reduce framework provided by Hadoop, and another using an approximation algorithm. All three methods will be tested on the supplied IMDB Dataset\footnote{IMDB is a site containing information about movies and actors, available at www.imdb.com}.\\
 
 To compare the speed of our Map-Reduce implementation and the accuracy of our approximation algorithm, a naïve sequential implementation has been created to compare with. For learning purposes we have projected our data from the dataset, to be of the form List<Movie, List<Actor>>, as this forces us to use two rounds in our Map-Reduce algorithm. The sequential algorithm receives the same input to be able to make a fair comparison. To further compare, our Map-Reduce algorithm will be tested on both a local setting and on Amazon Elastic MapReduce service\footnote{\url{https://aws.amazon.com/elasticmapreduce/}}.
+
+The code for the three methods introduced in this report can be found in the Appendix or at \url{https://github.com/bagvendt/SAD2_Project}
+
 % To validate and compare the Map-Reduce implementation, we will implement a simple, sequential algorithm that solves the same problem. In order to make the problem harder, we have converted the IMDB dataset \todo{Er "IMDB dataset" for indforstået?} to a format that forces the Map-Reduce algorithm to use 2 rounds of computation.
 % \paragraph{} 
 % To allow for comparison between the sequential and the Map-Reduce algorithms, we have made the sequential algorithm accept the same input.
