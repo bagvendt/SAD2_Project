@@ -100,7 +100,6 @@ This gives our sequential algorithm a worst-case running time of \BigO{a^2*m}. W
 \label{fig:map-reduce}
 \vspace{-10pt}
 \end{figure}
-\todo{Intet nævnt om hvordan data er projiceret. Er billedet nok eller skal det nævnes?}
 Solving the \emph{Popular} problem using Map-Reduce with the specified input format, requires two rounds. The first round will pivot the input into a more suitable structure, while the second round will answer the actual question, that is count the number of unique pairings of actors.
 
 \subsection{Round One}
@@ -108,7 +107,7 @@ Goal: Transform input pairs (Actor, List<Movie>) into output pairs (Movie, List<
 
 The mappers break down the (Actor, List<Movie>) pairs into a series of (Movie, Actor) pairs, one for each Movie in the input List<Movie>, essentially emitting the information: "this actor played in this movie".\\
 
-The shuffle step (part of the Hadoop framework)\todo{Specifikt for Hadoop?}, directs each pair emitted by a mapper, to a reducer, such that every pair with a given key $k$, is sent as input to a single reducer $R_k$.\\
+The shuffle phase (handled implicitly by the Hadoop framework), directs each pair emitted by a mapper, to a reducer, such that every pair with a given key $k$, is sent as input to a single reducer $R_k$.\\
 
 The reducers each receive a list of (Movie, Actor) pairs, and builds from those a single pair (Movie, List<Actor>) by simply appending each actor to a list. The output of round one is thus, a pivot of the input data changing the shape from (Actor, List<Movie>) to (Movie, List<Actor>), essentially saying "this movie contained exactly these actors".
 
@@ -134,7 +133,7 @@ The reducers each receive a list of\todo{Mathform eller texttt?}($Actor_{key}$, 
 To gauge the efficiency of our implementation, we look at three important performance measures from a Map-Reduce point of view. The number of rounds in the computation, the amount of work done in each mapper/reducer (in the worst case), and the number of pairs emitted.
 
 \paragraph{Number of rounds}
-The algorithm runs in a constant number of rounds (2), independent of the problem size. As mentioned previously, this can be reduced to a single round, if the input has a more suitable structure.\todo{mener jeg ikke vi nævner. Kun at vi har gjort det sværere, men ikke alternativet}
+The algorithm runs in a constant number of rounds (2), independent of the problem size. As mentioned previously, this can be reduced to a single round, if the input has a more suitable structure.
 
 \paragraph{Work distribution (skewness)}
 The amount of work done in each mapper/reducer is close to being balanced. Obviously, the round two reducer assigned to the most productive actor in the dataset, will do more work than the reducer assigned to an actor that only star in a single movie, but in terms of the input size, these numbers are very close to each other. This is only true because no actor has played in a significant fraction of the total number of movies in the dataset.\footnote{If this was not true, additional techniques, beyond the scope of this project, would be needed to balance the workload.} \todo{Hashfunction til at rette op på skewness. Flere til hver reducer udjævner uligheder. Bare en tanke}
@@ -167,7 +166,7 @@ The role of this script is firstly to sort the input by \texttt{Actor\_ID} and s
 Having three different outputs produced by a: the sequential algorithm, b: the Map-Reduce algorithm run on a local machine, and c: the Map-Reduce algorithm run on the Amazon Elastic MapReduce service, we then transform these outputs using the script.
 Using the UNIX tool \texttt{diff}, whose job it is to output the difference between two files, we see that that all three outputs are exactly the same.
 
-The fact that two algorithms, developed by different people\todo{Måske udelade different people?}, using different programming languages and different algorithmic paradigms, produce the same output, gives us a very high confidence in the correctness of both implementations. The odds of introducing the same systematic error into both, are extremely low.
+The fact that the two algorithms, developed by using different programming languages and different algorithmic paradigms, produce the same output, gives us a very high confidence in the correctness of both implementations. The odds of introducing the same systematic error into both, are extremely low.
 
 The first 10 lines of the output, i.e the top 10 actors that has starred with most unique actors are: 
 \begin{verbatim}
@@ -216,19 +215,19 @@ The results of the experiment is seen in Table \ref{tab:benchmark}
 Our experiment does not contain enough data to make any sweeping conclusions, but it does illustrate a tendency in the distributed setup that more powerful instances yield a faster running time and more instances yield a faster running time. 
 
 The experiment also shows that the sequential algorithm yields the fastest running time, we have been able to achieve. 
-It is our strong belief that if the dataset was larger we would see the distributed setup execute significantly faster than the sequential. \todo{Nævne overhead for distribuerede systemer?}
+It is our strong belief that if the dataset was larger we would see the distributed setup execute significantly faster than the sequential. It is our belief that the reason for the aquired result is the overhead associated to distributed systems and Map-Reduce specifically.
 
 \section{Approximating the "Popular" problem}
 Computing the exact solution, using our Map-Reduce approach, may not scale well with the size of the input, due to the number of pairs emitted. In the following, we suggest an algorithm for approximating the solution, building on previous work by \cite{paper:amossen}.
 
 \subsection{Equivalence of problems}
-The Popular problem can be expressed as a boolean matrix multiplication. Consider a matrix A of size $|actors| \cdot |movies|$, where the value $1$ at position $(x, y)$ means that actor $x$ starred in movie $y$.\todo{Vil det give en lettere overgang at bruge $m_1$ og $m_2$?} $R = A \cdot A^T$ will then have the dimensions $|actors| \cdot |actors|$, and a $1$ at position $(x, y)$ indicates that actor $x$ and $y$ starred in at least one movie together. Summing the number of non-zero entries in $R_{i,j}$ for a given $i$, gives the number of unique actors that actor $i$ starred with at least once, which is exactly the value we want to compute.\\
-Additionally, matrix multiplication can be expressed as the \emph{join-distinct} operation from relational algebra as follows: Consider the boolean matrix multiplication: $R = A \cdot C$ \todo{Hvad er $C$?}. Let the relation $R_1$ be the pairs corresponding to the non-zero values in A, and the $R_2$ be the pairs corresponding to non-zero values in C. Now each unique pair in $R_1 \Join R_2$ will correspond to a non-zero value in R.
+The Popular problem can be expressed as a boolean matrix multiplication. Consider a matrix $m_1$ of size $|actors| \cdot |movies|$, where the value $1$ at position $(x, y)$ means that actor $x$ starred in movie $y$. $M = m_1 \cdot m_2$, where $m_2 = m_1^T$, will then have the dimensions $|actors| \cdot |actors|$, and a $1$ at position $(x, y)$ indicates that actor $x$ and $y$ starred in at least one movie together. Summing the number of non-zero entries in $M_{i,j}$ for a given $i$, gives the number of unique actors that actor $i$ starred with at least once, which is exactly the value we want to compute.\\
+Additionally, matrix multiplication can be expressed as the \emph{join-distinct} operation from relational algebra as follows: Consider the boolean matrix multiplication: $M = m_1 \cdot m_2$. Let the relation $R_1$ be the pairs corresponding to the non-zero values in $m_1$, and let $R_2$ be the pairs corresponding to non-zero values in $m_2$. Now each unique pair in $R_1 \Join R_2$ will correspond to a non-zero value in $M$.
 
 \subsubsection{Related Work}
-Our algorithm builds on the work by Bar-Yossef \cite{paper:bar-yos}, which presents a technique for estimating the number of distinct items in a stream, using $O(1)$ space. If every item in the stream is hashed, and the smallest hashvalue, p, is stored. Then the number of distinct items in the stream can be approximated by $\tilde{z}=1/p$. The variance of this can be reduced by storing the k smallest hashvalues, and use $\tilde{z}=k/p$ as approximation.\\
+Our algorithm builds on the work by Bar-Yossef \cite{paper:bar-yos}, which presents a technique for estimating the number of distinct items in a stream, using $O(1)$ space. If every item in the stream is hashed, and the smallest hashvalue, p, is stored. Then the number of distinct items in the stream, $\tilde{z}$, can be approximated by $\tilde{z}=1/p$. The variance of this can be reduced by storing the k smallest hashvalues, and use $\tilde{z}=k/p$ as approximation.\\
 
-Our work proposes a variant to the algorithm presented by Amossen et al, in \cite{paper:amossen}. They use the technique from \cite{paper:bar-yos}, along with a clever sorting trick, to estimate the number of non-zero entries in boolean matrix products in expected linear time.
+Our work proposes a variant to the algorithm presented by Amossen et al, in \cite{paper:amossen}. They use the technique from \cite{paper:bar-yos}, along with a clever sorting trick, to estimate the number of non-zero entries in boolean matrix products in expected linear time. \todo{Er det "kun" expected?}
 
 %outline:
   %our twist / what we change in our variant
@@ -242,12 +241,11 @@ The algorithm uses the following functions and variables:
 
 \begin{itemize}
   \item $B$: $\pi_{b}(R_1 \cup R_2)$
-  \item $A_i$: $\pi_{a}(\sigma_{b=i}(R_1))$ \todo{skal vi overhovedet have denne når vi har $A_{\pi}$ og $W$}
-  \item $A_{\pi}$
-  \item $C_i$: $\pi_{c}(\sigma_{b=i}(R_2))$
   \item $W$: Chosen subset of $\pi_{a}(R_1)$ (the watchlist)
-  \item $F_s$: Buffer containing between $[0:k]$ observed hash values for a given $s \in B$
-  \item $S_s$: Sketch containing the $k$ smallest observed hash values for a given $s \in B$
+  \item $A_i$: $\pi_{a}(\sigma_{b=i}(R_1))$
+  \item $C_i$: $\pi_{c}(\sigma_{b=i}(R_2))$
+  \item $F_s$: Buffer containing the last $[0:k]$ observed hash values for a given $s \in W$
+  \item $S_s$: Sketch containing the $k$ smallest observed hash values for a given $s \in W$
   \item $p_s$: $k$ Probability that a new pair will be added to the sketch $F_s$
   \item $p_{max}$: The maximum value of $P_s, s \in W$
   \item $k$: Size of the sketches
@@ -282,7 +280,6 @@ After the check against $p_{max}$, the value of $h$ is checked against $p_s$. If
 \subsection{Pseudocode}
 \label{sub:pseudocode}
 % Fix så det bliver til procedure
-\todo{lille $p_s$ istedet for stort $P_s$?}
 \begin{algorithm}[H]
 \DontPrintSemicolon
   \Begin{
@@ -301,14 +298,14 @@ After the check against $p_{max}$, the value of $h$ is checked against $p_s$. If
           $\bar{s}$ $\leftarrow$ $(\bar{s} + 1)$ mod $\left\vert A_{\pi} \right\vert$ \;
         }
         $s$ $\leftarrow$ $\bar{s}$ \;
-        \While{$h(x_s,y_t) < P_{max}$ }
+        \While{$h(x_s,y_t) < p_{max}$ }
         {
-          \If{$h(x_s,y_t) < P_s$} {
+          \If{$h(x_s,y_t) < p_s$} {
             $F_s$ $\leftarrow$ $F_s \cup \{ (x_s , y_t) \}$ \;
             \If{$\left\vert F_s \right\vert$ = k}{
-              ($P_s,S_s$) $\leftarrow$ \texttt{COMBINE}($S_s,F_s$) \;
+              ($p_s,S_s$) $\leftarrow$ \texttt{COMBINE}($S_s,F_s$) \;
 
-              $p_{max}$ $\leftarrow$ max(P) \;
+              $p_{max}$ $\leftarrow$ max(p) \;
               $F_s$ $\leftarrow$ $\emptyset$ \;
             }
             }
@@ -333,16 +330,16 @@ After the check against $p_{max}$, the value of $h$ is checked against $p_s$. If
 \end{algorithm}
 \subsection{Analysis}
 \paragraph {Running Time}
-Following \cite{paper:amossen}, we split the analysis of the running time into two.\todo{Behøver vi skrive at vi følger deres fremgangsmåde?}
+We split the analysis of the running time into two.
 The first part considers the \emph{while} loop on lines 15 to 24, and the second part considers the remaining work done.\\
 
 Every call to \texttt{COMBINE} takes $O(k)$ time, \cite{paper:amossen}. Since these calls happen, at most, every $k$ iterations of the inner loop, this gives amortized linear running time for \texttt{COMBINE}.\\
 
-\textit{while loop}. Every iteration will add at most one pair $(x_s, y_t)$ to one of the buffers, $F_i$. We can only safely exit the loop if $h(x_s, y_t) < p_{max}$, but a candidate pair will not be added unless $h(x_s, y_t) < p_s$, effectively wasting a number of iterations, proportional to $p_{max}-p_i$. Thus the expected number of iterations are $O(p_{max}|A_i||C_i|)$.\todo{Skal vi benytte $W$ i stedet for $A_i$?}\\
+\textit{while loop}. Every iteration will add at most one pair $(x_s, y_t)$ to one of the buffers, $F_i$. We can only safely exit the loop if $h(x_s, y_t) < p_{max}$, but a candidate pair will not be added unless $h(x_s, y_t) < p_s$, effectively wasting a number of iterations, proportional to $p_{max}-p_i$. Thus the expected number of iterations are $O(p_{max}|W||C_i|)$.\\
 
 \textit{Remaining work}.
 The intersection on line 5, can be done in $O(|W|+|C_i|)$ time, using a hashtable. Since $|W|<|C_i|$, this is equal to $O(|C_i|)$.
-Updating $P_{max}$ on line 20 can be done in $log(|W|)$ time, using a Heap\todo{Nogle negative sider, siden det ikke bliver brugt i combine?}.
+Updating $P_{max}$ on line 20 can be done in $log(|W|)$ time, using a Heap.
 
 The overall time complexity is dominated by the execution of the inner loop, $O(n + \sum_i p_{max}|W||C_i|)$.\\
 
@@ -356,7 +353,7 @@ The algorithm uses $O(k\cdot|W|)$ space, since it has to maintain $W$ individual
 \paragraph{Error and Variance}
 As we use the same approximation technique as the one presented in \cite{paper:bar-yos}. the same analysis applies to our algorithm. This means that for each exact solution, $z_i$, and the corresponding appoximation, $\tilde{z}_i$ we know that $\tilde{z}_i \in [z_i-\epsilon,z_i+\epsilon]$, where $\epsilon = \sqrt{9/k}$. We can state this is the case with probability 2/3.\\
 
-If we wish to increase the confidence in the approximation, the error-probability $(2/3)$ can be made arbitrarily small, by rerunning the algorith a number of times, and choosing the median.\todo{Ville gerne have formlen med, men kan ikke finde den}
+If we wish to increase the confidence in the approximation, the error-probability $(2/3)$ can be made arbitrarily small, by rerunning the algorith a number of times, and choosing the median.\todo{Ville gerne have formlen med, men kan ikke finde den. Ved heller ikke om det er varians eller error som bliver mindre ved reruns}
 
 \subsection{Experiments}
 We have set up an experiment in which we run our algorithm 100 times on the data from the "Popular" problem.\todo{Speciel formatering af "Popular"?}
@@ -364,7 +361,7 @@ On each repetition, we generate new hash functions $h_1$ and $h_2$.
 Futhermore we have selected $W$ to be the top 10 actors introduced in Section \ref{sub:verification}. 
 
 We start each repetition with $p$=1. This is done to ensure that we fill the sketches.
-We have run the experiment twice, 100 for $k=256$ and 100 for $k=1024$, to see the effect of choice of $k$ on the error ratio. \todo{Error eller Variance?}
+We have run the experiment twice, 100 for $k=256$ and 100 for $k=1024$, to see the effect of choice of $k$ on the variance.
 
 In every iteration and for each actor we calculate a ratio, "observed estimate" / "actual value". By sorting these values, we can draw the ratio / cumulative distribution function graph, for each choice of $k$. These graphs are presented in Figures \ref{fig:k256} and \ref{fig:k1024}.
 
