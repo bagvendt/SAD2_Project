@@ -409,16 +409,16 @@ We observe that the size estimation algorithm could be parallelized by spawning 
 In this report we have presented three methods to find the most popular actors in the IMDB dataset.
 
 
-Firstly we presented a simple Naïve solution that just iterates over all possible actor-actor combinations. The purpose of presenting this solution was merely to use it's results as the ground truth for the following two methods.
+Firstly we presented a simple Naïve solution that just iterates over all possible actor-actor combinations. The purpose of presenting this solution was merely to use its results as the ground truth for the following two methods.
 
 
 Secondly we have introduced a solution to the problem in a distributed environment, using techniques that conform to the Map-Reduce framework as it is implemented in Apache Hadoop.
 
 
-Lastly we have presented an algorithm for approximating the size of boolean matrix products per row. The algorithm runs in linear time, if $p_{max}$ is chosen correctly. TODO delete this or talk about choosing $p_{max}$!. The approximations lie within a factor $\epsilon$ of the actual value, with a probability of $2/3$.\todo{Skal også konkludere på Map-Reduce vs sequential}
+Lastly we have presented an algorithm for approximating the size of boolean matrix products per row. The algorithm runs in linear time, if $p_{max}$ is chosen correctly\todo{Har ikke nævnt noget om hvad $p_{max}$ i så fald skal sættes til}. The approximations lie within a factor $1\pm\epsilon$ of the actual value, with a probability of $2/3$.\todo{Skal også konkludere på Map-Reduce vs sequential}
 
-We consider our contribution as success since we in all of the presented cases have been able to demonstrate a correct, or aprroximated solution. 
-We do however realize that our per-row boolean matrix product approximation requires some modifications before it is suitable to be generalized.
+We consider our contribution as success since we in all of the presented cases have been able to demonstrate a correct, or approximated solution. 
+We do, however, realize that our per-row boolean matrix product approximation requires some modifications before it is suitable to be generalized.
 
 \newpage
 
