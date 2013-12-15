@@ -238,7 +238,7 @@ Our work proposes a variant to the algorithm presented in \cite{paper:amossen}. 
   %preparation (introduction of variables)
 \subsection{Our Algorithm}
 \label{subsub:alg}
-Instead of approximating the total number of distinct values in the matrix multiplication $\pi_{ac}(R_1 \Join R_2)$, with $R_1(a,b)$, $R_2(b,c)$, as done by Amossen et. al., we estimate the number of distinct values of $\pi_{ac}(\sigma_{a=i}(R_1 \Join R_2))$ for $i \in W$ where $W \subseteq \pi_{a}(R_1)$ and assume that $|W| \ll |\pi_{a}(R_1)|$. $W$ is the list of actors we are interested in following. We call $W$ our 'watchlist' \\
+Instead of approximating the total number of distinct values in the matrix multiplication $\pi_{ac}(R_1 \Join R_2)$, with $R_1(a,b)$, $R_2(b,c)$, as done by Amossen et. al., we estimate the number of distinct values of $\pi_{ac}(\sigma_{a=i}(R_1 \Join R_2))$ for $i \in W$ where $W \subseteq \pi_{a}(R_1)$ and assume that $|W| \ll |\pi_{a}(R_1)|$. $W$ is the list of actors we are interested in following. We call $W$ our 'watchlist'. \\
 At a high level, our algorithm performs the following steps: It iterates over all values in $\mathcal{B}$, which is the set of values that has been used to join. For each value $i \in \mathcal{B}$, we find all the pairs that would be joined for that particular $i$, and with some probability, we look at that pair. This is done to reduce our work from polynomial time to linear time. Afterwards we use the approximation technique from \cite{paper:bar-yos}, to compute estimates.\\
 
 The algorithm uses the following functions and variables:
