@@ -25,7 +25,9 @@
 \usepackage[T1]{fontenc} % use for allowing < and > in cleartext
 \usepackage{fixltx2e}    % use for textsubscript
 \usepackage[linesnumbered,boxed,ruled]{algorithm2e}
-\newcommand{\BigO}[1]{\ensuremath{\operatorname{O}\left(#1\right)}}
+% \newcommand{\BigO}[1]{\ensuremath{\operatorname{O}\left(#1\right)}}
+\newcommand{\BigO}[1]{\ensuremath{\mathop{}\mathopen{}\mathcal{O}\mathopen{}\left(#1\right)}}
+
 \definecolor{mygreen}{rgb}{0,0.6,0}
 \definecolor{mygray}{rgb}{0.5,0.5,0.5}
 \definecolor{mymauve}{rgb}{0.58,0,0.82}
@@ -75,7 +77,7 @@
 \setcounter{page}{1}
 \section{Introduction}
 
-In this report, we try to answer the question: "How many unique co-actors has a given actor starred alongside", we call this the \emph{Popular} problem. We will describe three methods that solves the problem: One Naïve implementation, One using the Map-Reduce framework provided by Hadoop, and another using an approximation algorithm. All three methods will be tested on the supplied IMDB Dataset\footnote{IMDB is a site containing information about movies and actors, available at www.imdb.com}.\\
+In this report, we try to answer the question: "How many unique co-actors has a given actor starred alongside", we call this the \emph{Popular} problem. We will describe three methods that solves the problem: One Naïve implementation, One using the Map-Reduce framework provided by Hadoop, and another using an approximation algorithm. All three methods will be tested on the supplied IMDB Dataset\footnote{IMDB is a site containing information about movies and actors, available at \url{www.imdb.com}}.\\
 
 To compare the speed of our Map-Reduce implementation and the accuracy of our approximation algorithm, a naïve sequential implementation has been created to compare with. For learning purposes we have projected our data from the dataset, to be of the form List<Movie, List<Actor>>, as this forces us to use two rounds in our Map-Reduce algorithm. The sequential algorithm receives the same input to be able to make a fair comparison. To further compare, our Map-Reduce algorithm will be tested on both a local setting and on Amazon Elastic MapReduce service\footnote{\url{https://aws.amazon.com/elasticmapreduce/}}.
 % To validate and compare the Map-Reduce implementation, we will implement a simple, sequential algorithm that solves the same problem. In order to make the problem harder, we have converted the IMDB dataset \todo{Er "IMDB dataset" for indforstået?} to a format that forces the Map-Reduce algorithm to use 2 rounds of computation.
@@ -116,7 +118,6 @@ The reducers each receive a list of (Movie, Actor) pairs, and builds from those 
 Goal: Transform input pairs (Movie, List<Actor>) into output pairs (Actor, Count), where count is the number of unique co-actors this actor has starred with in a movie.\\
 
 The mappers break down the (Movie, List<Actor>) pairs into all possible Actor-pairs along with their inverses.
-\todo{Henvisning til denne figur i teksten?}
 \begin{verbatim}
 function RoundTwoMap(...)
     for(actor a in actors)
@@ -225,29 +226,29 @@ The Popular problem can be expressed as a boolean matrix multiplication. Conside
 Additionally, matrix multiplication can be expressed as the \emph{join-distinct} operation from relational algebra as follows: Consider the boolean matrix multiplication: $M = m_1 \cdot m_2$. Let the relation $R_1$ be the pairs corresponding to the non-zero values in $m_1$, and let $R_2$ be the pairs corresponding to non-zero values in $m_2$. Now each unique pair in $R_1 \Join R_2$ will correspond to a non-zero value in $M$.
 
 \subsubsection{Related Work}
-Our work proposes a variant to the algorithm presented in \cite{paper:amossen}. They use an approximation technique presented by Bar-Yossef in \cite{paper:bar-yos}, along with a clever sorting trick, to estimate the number of non-zero entries in boolean matrix products in expected linear time. \todo{Er det "kun" expected?}
+Our work proposes a variant to the algorithm presented in \cite{paper:amossen}. They use an approximation technique presented by Bar-Yossef in \cite{paper:bar-yos}, along with a clever sorting trick, to estimate the number of non-zero entries in boolean matrix products in expected linear time.
 
-\cite{paper:bar-yos} presents a technique for estimating the number of distinct items in a stream, using $O(1)$ space. If every item in the stream is hashed, and the smallest hash value, p, is stored. The number of distinct items in the stream, $\tilde{z}$, can be approximated by $\tilde{z}=1/p$. The variance of this can be reduced by storing the k smallest hash values, and use $\tilde{z}=k/p$ as approximation.\\
+\cite{paper:bar-yos} presents a technique for estimating the number of distinct items in a stream, using $\BigO{1}$ space. If every item in the stream is hashed, and the smallest hash value, p, is stored. The number of distinct items in the stream, $\tilde{z}$, can be approximated by $\tilde{z}=1/p$. The variance of this can be reduced by storing the k smallest hash values, and use $\tilde{z}=k/p$ as approximation.\\
 
 %outline:
   %our twist / what we change in our variant
   %preparation (introduction of variables)
 \subsection{Our Algorithm}
 \label{subsub:alg}
-Instead of approximating the total number of distinct values in the matrix multiplication $\pi_{ac}(R_1 \Join R_2)$, with $R_1(a,b)$, $R_2(b,c)$, as done by Amossen et. al., we estimate the number of distinct values of $\pi_{ac}(R_1 \Join R_2)$ for each distinct value of $a$ for $a \subseteq c$. We call this subset the 'Watchlist', $W$, and assume that $|W| << |c|$ \\
-At a high level, our algorithm performs the following steps: It iterates over all values in B (the dimension that is joined away). For each value $i \in B$, we find all the pairs that would be joined for that particular $i$, and with some probability, we look at that pair. This is done to reduce our work from polynomial time to linear time. Afterwards we use the approximation technique from \cite{paper:bar-yos}, to compute estimates.\\
+Instead of approximating the total number of distinct values in the matrix multiplication $\pi_{ac}(R_1 \Join R_2)$, with $R_1(a,b)$, $R_2(b,c)$, as done by Amossen et. al., we estimate the number of distinct values of $\pi_{ac}(\sigma_{a=i}(R_1 \Join R_2))$ for $i \in W$ where $W \subseteq \pi_{a}(R_1)$ and assume that $|W| \ll |\pi_{a}(R_1)|$. $W$ is the list of actors we are interested in following. We call $W$ our 'watchlist' \\
+At a high level, our algorithm performs the following steps: It iterates over all values in $\mathcal{B}$, which is the set of values that has been used to join. For each value $i \in \mathcal{B}$, we find all the pairs that would be joined for that particular $i$, and with some probability, we look at that pair. This is done to reduce our work from polynomial time to linear time. Afterwards we use the approximation technique from \cite{paper:bar-yos}, to compute estimates.\\
 
 The algorithm uses the following functions and variables:
 
 \begin{itemize}
-  \item $B$: $\pi_{b}(R_1 \cup R_2)$
-  \item $W$: Chosen subset of $\pi_{a}(R_1)$ (the watchlist)
-  \item $A_i$: $\pi_{a}(\sigma_{b=i}(R_1))$
-  \item $C_i$: $\pi_{c}(\sigma_{b=i}(R_2))$
-  \item $F_s$: Buffer containing the last $[0:k]$ observed hash values for a given $s \in W$
-  \item $S_s$: Sketch containing the $k$ smallest observed hash values for a given $s \in W$
+  \item $\mathcal{B}$: $\pi_{b}(R_1 \cup R_2)$
+  \item $\mathcal{W}$: Chosen subset of $\pi_{a}(R_1)$ (the watchlist)
+  \item $\mathcal{A}_i$: $\pi_{a}(\sigma_{b=i}(R_1))$
+  \item $\mathcal{C}_i$: $\pi_{c}(\sigma_{b=i}(R_2))$
+  \item $F_s$: Buffer containing the last $[0:k]$ observed hash values for a given $s \in \mathcal{W}$
+  \item $S_s$: Sketch containing the $k$ smallest observed hash values for a given $s \in \mathcal{W}$
   \item $p_s$: $k$ Probability that a new pair will be added to the sketch $F_s$
-  \item $p_{max}$: The maximum value of $P_s, s \in W$
+  \item $p_{max}$: The maximum value of $P_s, s \in \mathcal{W}$
   \item $k$: Size of the sketches
   \item Hash function: $h_1 : \mathbb{R} \rightarrow [0,1]$
   \item Hash function: $h_2 : \mathbb{R} \rightarrow [0,1]$
@@ -259,11 +260,11 @@ $h(x,y) = (h_1(x) - h_2(x))$ mod $1$
 \end{center}
 
 \paragraph{Approach}
-Intuitively\footnote{Only the cells evaluated will have their $h$ value computed} we create a table for each value $i \in B$. These tables have the dimensions $|A_i\cap W|\cdot | \times |C_i|$, where the rows are sorted according to $h_1$ from top to bottom and the columns are sorted according to $h_2$ from left to right. Each entry in the table contains a computed value of $h$.\\
+Intuitively\footnote{Only the cells evaluated will have their $h$ value computed} we create a table for each value $i \in \mathcal{B}$. These tables have the dimensions $|\mathcal{A}_i\cap \mathcal{W}|\cdot | \times |\mathcal{C}_i|$, where the rows are sorted according to $h_1$ from top to bottom and the columns are sorted according to $h_2$ from left to right. Each entry in the table contains a computed value of $h$.\\
 
 The algorithm starts at the top left of the table (row s, column t), iterating over the rows of the left-most column to find a cell where the $h$-value is smaller than the one above it. We know that since the row is sorted in $h_1$, that this cell is guaranteed to have the smallest value of $h$ in the column. From this cell, we continue looping through the column, now comparing each value to $p_{max}$, to check if one of the sketches could possibly include the pair being considered. (We remark that this is different from \cite{paper:amossen}, where only a single $p$ is maintained and checked against). \\
 
-After the check against $p_{max}$, the value of $h$ is checked against $p_s$. If the value of $h$ is lower, we add the pair $(x_s, y_t)$ to the buffer $F_s$. When the current value of $h$ is greater than $p_{max}$ we move on to the next column, starting from the row where we found the minimum value in the previous column. This is more efficient, because it utilizes the fact that the columns are sorted according to $h_2$, limiting the number of iterations needed. When a buffer is filled, it is merged into the corresponding sketch, using the \texttt{COMBINE} procedure. \texttt{COMBINE} works by finding the median and then move smaller values into the sketch, in linear time\footnote{The procedure is outline in greater detail in \cite{paper:amossen}}. Once all $i \in B$ have been processed, we approximate \~{z}$_s$ by utilizing the result from \cite{paper:bar-yos} giving us: \~{z}$_s$ = $k/p_s$
+After the check against $p_{max}$, the value of $h$ is checked against $p_s$. If the value of $h$ is lower, we add the pair $(x_s, y_t)$ to the buffer $F_s$. When the current value of $h$ is greater than $p_{max}$ we move on to the next column, starting from the row where we found the minimum value in the previous column. This is more efficient, because it utilizes the fact that the columns are sorted according to $h_2$, limiting the number of iterations needed. When a buffer is filled, it is merged into the corresponding sketch, using the \texttt{COMBINE} procedure. \texttt{COMBINE} works by finding the median and then move smaller values into the sketch, in linear time\footnote{The procedure is outline in greater detail in \cite{paper:amossen}}. Once all $i \in \mathcal{B}$ have been processed, we approximate \~{z}$_s$ by utilizing the result from \cite{paper:bar-yos} giving us: \~{z}$_s$ = $k/p_s$
 
 %The algorithm works by creating a hashmap mapping $R_1(c)$ to $R_1(b)$, which can be done in linear time. Then for each key we sort
 %We start by looking at the distinct values of $\pi_{b}(R_1 \cup R_2)$
@@ -288,14 +289,14 @@ After the check against $p_{max}$, the value of $h$ is checked against $p_s$. If
     $F$ $\leftarrow$ $\emptyset$ \;
     
     \For{$i$ $\in$ $B$}{
-      $A_{\pi}$ $\leftarrow$ $A_i \cap W$ \;
-      $x$ $\leftarrow$ $A_{\pi}$ sorted according to $h_1$-value\;
-      $y$ $\leftarrow$ $C_i$ sorted according to $h_2$-value\;
+      $A_{\pi}$ $\leftarrow$ $\mathcal{A}_i \cap \mathcal{W}$ \;
+      $x$ $\leftarrow$ $\mathcal{A}_{\pi}$ sorted according to $h_1$-value\;
+      $y$ $\leftarrow$ $\mathcal{C}_i$ sorted according to $h_2$-value\;
       $\bar{s}$ $\leftarrow$ $1$ \;
-      \For{$t$ := 1 to $\left\vert C_i \right\vert$}{ 
+      \For{$t$ := 1 to $\left\vert \mathcal{C}_i \right\vert$}{ 
         \While{$h(x_{\bar{s}}, y_t)$ $>$ $h(x_{( \bar{s} -1) mod \left\vert A_{\pi} \right\vert}, y_t)$} %Fix denne linie
         {
-          $\bar{s}$ $\leftarrow$ $(\bar{s} + 1)$ mod $\left\vert A_{\pi} \right\vert$ \;
+          $\bar{s}$ $\leftarrow$ $(\bar{s} + 1)$ mod $\left\vert \mathcal{A}_{\pi} \right\vert$ \;
         }
         $s$ $\leftarrow$ $\bar{s}$ \;
         \While{$h(x_s,y_t) < p_{max}$ }
@@ -309,7 +310,7 @@ After the check against $p_{max}$, the value of $h$ is checked against $p_s$. If
               $F_s$ $\leftarrow$ $\emptyset$ \;
             }
             }
-            $s$ $\leftarrow$ $(s + 1)$ mod $\left\vert A_{\pi} \right\vert$ \;
+            $s$ $\leftarrow$ $(s + 1)$ mod $\left\vert \mathcal{A}_{\pi} \right\vert$ \;
           }
         }
       }
@@ -333,19 +334,19 @@ After the check against $p_{max}$, the value of $h$ is checked against $p_s$. If
 We split the analysis of the running time into two.
 The first part considers the \emph{while} loop on lines 15 to 24, and the second part considers the remaining work done.\\
 
-\textit{while loop}. Every iteration will add at most one pair $(x_s, y_t)$ to one of the buffers, $F_i$. We can only safely exit the loop if $h(x_s, y_t) < p_{max}$, but a candidate pair will not be added unless $h(x_s, y_t) < p_s$, effectively wasting a number of iterations, proportional to $p_{max}-p_i$. Thus the expected number of iterations are $O(p_{max}|W||C_i|)$.\\ Every call to \texttt{COMBINE} takes $O(k)$ time, \cite{paper:amossen}. Since these calls happen, at most, every $k$ iterations of the inner loop, this gives amortized linear running time for \texttt{COMBINE}.\\
+\textit{while loop}. Every iteration will add at most one pair $(x_s, y_t)$ to one of the buffers, $F_i$. We can only safely exit the loop if $h(x_s, y_t) < p_{max}$, but a candidate pair will not be added unless $h(x_s, y_t) < p_s$, effectively wasting a number of iterations, proportional to $p_{max}-p_i$. Thus the expected number of iterations are $\BigO{p_{max}|\mathcal{W}||\mathcal{C}_i|}$.\\ Every call to \texttt{COMBINE} takes $\BigO{k}$ time, \cite{paper:amossen}. Since these calls happen, at most, every $k$ iterations of the inner loop, this gives amortized linear running time for \texttt{COMBINE}.\\
 
 
 \textit{Remaining work}.
-The intersection on line 5, can be done in $O(|W|+|C_i|)$ time, using a hash table. Since $|W|<|C_i|$, this is equal to $O(|C_i|)$.
-Updating $P_{max}$ on line 20 can be done in $log(|W|)$ time, using a Heap.
+The intersection on line 5, can be done in $O(|\mathcal{W}|+|\mathcal{C}_i|)$ time, using a hash table. Since $|W|<|C_i|$, this is equal to $O(|C_i|)$.
+Updating $P_{max}$ on line 20 can be done in $log(|\mathcal{W}|)$ time, using a Heap.
 
-The overall time complexity is dominated by the execution of the inner loop, $O(n + \sum_i p_{max}|W||C_i|)$.\\
+The overall time complexity is dominated by the execution of the inner loop, $\BigO{n + \sum_i p_{max}|\mathcal{W}||\mathcal{W}_i|}$.\\
 
 The worst-case running time is the same as \cite{paper:amossen} (assuming $p_{max} = 1$), but in actual use, we predict that our implementation will be significantly slower. This is due to the wasted work done in the inner loop, whenever $P_i < P_{max}$, and the fact that $p_{max}$ will decrease at a lower rate than $p$ in \cite{paper:amossen}.
 
 \paragraph{Space Usage}
-The algorithm uses $O(k\cdot|W|)$ space, since it has to maintain $W$ individual sketches, each of size $O(k)$. It is worth noting, that the space usage is independent of the input size $n$. This is a factor $|W|$ more than \cite{paper:amossen}, which is to be expected.
+The algorithm uses $\BigO{k\cdot|W|}$ space, since it has to maintain $\mathcal{W}$ individual sketches, each of size $\BigO{k}$. It is worth noting, that the space usage is independent of the input size $n$. This is a factor $|\mathcal{W}|$ more than \cite{paper:amossen}, which is to be expected.
   %io
     %locality of reference?
 
@@ -399,9 +400,9 @@ A choice of $k=1024$ corresponds to $\epsilon=\sqrt{9/1024}=0.0936$. The $\epsil
 %expected_1024 = 0.09375
 
 \subsection{Suggested Improvements}
-If $|W|\ll n$ and the matrix is sparse, $|A_{\pi}|=1$ will occur often, Corresponding to iterating over a movie starring exactly one of the actors on the watchlist. In this case, the inner loop is poorly optimized. Firstly $p_i$ could be used, instead of $p_{max}$, and secondly it could be exploited that the values of $h(x_s, y_t)$ becomes smaller mod 1, when $t$ increases. Using a trick analogous to lines 11 to 13 in the pseudocode, could lower the bound on the inner loop from $O(p_{max}|A_i||C_i|)$ to $O(p|C_i|)$.
+If $|W|\ll n$ and the matrix is sparse, $|A_{\pi}|=1$ will occur often, Corresponding to iterating over a movie starring exactly one of the actors on the watchlist. In this case, the inner loop is poorly optimized. Firstly $p_i$ could be used, instead of $p_{max}$, and secondly it could be exploited that the values of $h(x_s, y_t)$ becomes smaller mod 1, when $t$ increases. Using a trick analogous to lines 11 to 13 in the pseudocode, could lower the bound on the inner loop from $\BigO{p_{max}|\mathcal{A}_i||\mathcal{C}_i|}$ to $\BigO{p|\mathcal{C}_i|}$.
 
-We observe that the size estimation algorithm could be parallelized by spawning a thread for each movie  $i \in B$. Each time some S and F is to be updated, either by adding to a pair to F or by calling the procedure COMBINE on them, a mutex lock could be introduced to enforce atomicity. 
+We observe that the size estimation algorithm could be parallelized by spawning a thread for each movie  $i \in \mathcal{B}$. Each time some S and F is to be updated, either by adding to a pair to F or by calling the procedure COMBINE on them, a mutex lock could be introduced to enforce atomicity. 
 
 
 \section{Conclusion}
@@ -413,7 +414,7 @@ Firstly we presented a simple Naïve solution that just iterates over all possib
 
 Secondly we have introduced a solution to the problem in a distributed environment, using techniques that conform to the Map-Reduce framework as it is implemented in Apache Hadoop.
 
-Lastly we have presented an algorithm for approximating the size of boolean matrix products per row. The algorithm runs in linear time, if $p_{max}$ is chosen correctly\todo{Har ikke nævnt noget om hvad $p_{max}$ i så fald skal sættes til}. The approximations lie within a factor $1\pm\epsilon$ of the actual value, with a probability of $2/3$.\todo{Skal også konkludere på Map-Reduce vs sequential}
+Lastly we have presented an algorithm for approximating the size of boolean matrix products per row. The algorithm runs in linear time, if $p_{max}$ is chosen correctly. The approximations lie within a factor $1\pm\epsilon$ of the actual value, with a probability of $2/3$.
  
 \newpage
 
