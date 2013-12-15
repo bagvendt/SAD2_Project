@@ -131,7 +131,7 @@ function RoundTwoMap(...)
 
 This produces a number of pairs, quadratic in the number of actors in the movie, each capturing the information "Actor A played with Actor B in some movie".\\
 
-The reducers each receive a list of\todo{Mathform eller texttt?}($Actor_{key}$, $Actor_{value}$) pairs, and using a Java HashSet\footnote{The 'Set' interface guarantees that no two equal objects can be contained in the set, at the same time.}, they filter out any duplicate pairs, and emit the final (Actor, count) pairs, one for each actor. These pairs give the number of unique co-actors, a given actor has had during his career.
+The reducers each receive a list of ($Actor_{key}$, $Actor_{value}$) pairs, and using a Java HashSet\footnote{The 'Set' interface guarantees that no two equal objects can be contained in the set, at the same time.}, they filter out any duplicate pairs, and emit the final (Actor, count) pairs, one for each actor. These pairs give the number of unique co-actors, a given actor has had during his career.
 
 \subsection{Analysis}
 To gauge the efficiency of our implementation, we look at three important performance measures from a Map-Reduce point of view. The number of rounds in the computation, the amount of work done in each mapper/reducer (in the worst case), and the number of pairs emitted.
